@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "trm-py"
+version = "0.1.0"
+description = "Python bindings to the trm-cpp libary for precision astronomy"
+authors = ["PipGrylls <pipgryllsastro@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+astropy = "^6.1.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
