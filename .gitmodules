@@ -1,3 +1,18 @@
 [submodule "cpp-subs"]
 	path = src/cpp-subs
 	url = git@github.com:trm-astro/cpp-subs.git
+[submodule "src/cpp-roche"]
+	path = src/cpp-roche
+	url = git@github.com:trm-astro/cpp-roche.git
+[submodule "src/cpp-mem"]
+	path = src/cpp-mem
+	url = git@github.com:trm-astro/cpp-mem.git
+[submodule "src/cpp-lcurve"]
+	path = src/cpp-lcurve
+	url = git@github.com:trm-astro/cpp-lcurve.git
+[submodule "src/cpp-colly"]
+	path = src/cpp-colly
+	url = git@github.com:trm-astro/cpp-colly.git
+[submodule "src/cpp-binary"]
+	path = src/cpp-binary
+	url = git@github.com:trm-astro/cpp-binary.git

@@ -8,10 +8,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 astropy = "^6.1.4"
+pybind11 = "^2.13.0"
 
 [tool.poetry.build]
 script = "build.py"
-generate-setup-file = true
 
 [build-system]
 requires = ["poetry-core"]
