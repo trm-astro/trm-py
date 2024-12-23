@@ -4,3 +4,4 @@ test.png
 test.cpp
 data
 .DS_Store
+tests/
