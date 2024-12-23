@@ -1,2 +1,5 @@
 CMakeUserPresets.json
 build/
+test.png
+test.cpp
+data
