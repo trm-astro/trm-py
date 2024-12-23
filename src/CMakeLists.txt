@@ -22,6 +22,9 @@ add_subdirectory(cpp-colly)
 add_subdirectory(cpp-roche)
 add_subdirectory(cpp-lcurve)
 
+#for each subdirectory we need to now install to /usr/local/lib
+
+
 # Define sources
 
 set(SOURCES test.cpp)
@@ -44,22 +47,12 @@ target_link_libraries(${PACKAGE_NAME}
 )
 
 # Set RPATH properties
-set_target_properties(${PACKAGE_NAME} PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    BUILD_WITH_INSTALL_RPATH TRUE
-    INSTALL_RPATH_USE_LINK_PATH TRUE
-    BUILD_RPATH_USE_ORIGIN TRUE
-)
-
-
-# Make the executable
-add_executable(test test.cpp)
-
-target_link_libraries(test
-    PUBLIC
-        ${PACKAGE_NAME}
-
-)
+# set_target_properties(${PACKAGE_NAME} PROPERTIES
+#     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+#     BUILD_WITH_INSTALL_RPATH TRUE
+#     INSTALL_RPATH_USE_LINK_PATH TRUE
+#     BUILD_RPATH_USE_ORIGIN TRUE
+# )
 
 # Make the lcurve executable
 add_executable(lprofile cpp-lcurve/src/lprofile.cc)
@@ -71,6 +64,8 @@ add_executable(rotprof cpp-lcurve/src/rotprof.cc)
 add_executable(simplex cpp-lcurve/src/simplex.cc)
 add_executable(visualise cpp-lcurve/src/visualise.cc)
 
+
+
 foreach(EXEC lprofile levmarq lroche lroches picture rotprof simplex visualise)
     target_link_libraries(
         ${EXEC}
@@ -80,6 +75,14 @@ foreach(EXEC lprofile levmarq lroche lroches picture rotprof simplex visualise)
             roche
             lcurve
     )
+    set_target_properties(${EXEC} PROPERTIES
+        INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+        BUILD_RPATH_USE_ORIGIN TRUE
+    )
+    install(TARGETS ${EXEC} DESTINATION bin)
 endforeach()
+
 
 
