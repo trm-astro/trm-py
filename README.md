@@ -6,9 +6,9 @@ This is the update to many of the repositories found [here](https://github.com/t
 
 This code will be installable via `pip install trm-py` from PyPi (and potentially via Conda). This code will not require additional C++ libaray installations as it will come formost as a `bdist` for most common platforms and a `sdist` to support build and installation on uncommon platforms.
 
-Until further notice this is a WIP and should not be considered usable feor scientific use.
+Until further notice this is a WIP and should not be considered usable for scientific use.
 
-# CPP Subdirectorys
+## CPP Subdirectorys
 
 By necessity the CPP subdirectorys are included to build the python wheel against.
 This makes this the aconvenient place to do a full CPP build for those looking to access trm-subs and associated libs via cpp code.

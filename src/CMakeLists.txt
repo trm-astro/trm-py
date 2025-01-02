@@ -1,3 +1,4 @@
+# This makes and installs the CPP executables and the shared librarys
 cmake_minimum_required(VERSION 3.23)
 project(py-subs)
 
