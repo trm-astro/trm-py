@@ -87,7 +87,7 @@ import numpy as np
 from .input import Fname
 
 #sys.path.append('.')
-from ._subs import *
+from . import *
 
 # Constants 
 ME     = 9.1093897e-31     # Mass of the electron, SI

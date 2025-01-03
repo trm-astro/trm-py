@@ -85,9 +85,9 @@ import sys, os, re, copy
 import math as m
 import numpy as np
 
-from .input import Fname
+from .subs.input import Fname
 
-from trm_py import subs as cpp_subs
+import py_subs
 
 # Constants 
 ME     = 9.1093897e-31     # Mass of the electron, SI

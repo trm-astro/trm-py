@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include "trm/subs.h"
 
 // Define the alias "py" for the namespace "pybind11"
 namespace py = pybind11;
@@ -14,8 +15,8 @@ PYBIND11_MODULE(trm_py, m) {
     m.doc() = "A package with multiple features (submodules)";
 
     // Create the submodule `subs`
-    py::module_ subs = m.def_submodule("subs", "interface to cpp-subs");
-    init_subs(subs);
+    py::module_ cpp_subs = m.def_submodule("cpp_subs", "interface to cpp-subs");
+    init_subs(cpp_subs);
 
     // // Initialize the submodule `binary`
     // py::module_ binary = m.def_submodule("binary", "interface to cpp-binary");

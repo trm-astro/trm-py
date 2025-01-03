@@ -4,7 +4,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 
 def build(setup_kwargs):
     ext_modules = [
-        Pybind11Extension("trm_py", ["src/main.cpp"]),
+        Pybind11Extension("py_subs", ["src/main.cpp"]),
     ]
     setup_kwargs.update(
         {
