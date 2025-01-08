@@ -1,0 +1,10 @@
+#!/bin/csh
+
+source ~/software/bin/binary/Binary
+
+# compute optimally scaled fits for each line
+
+edisc m=0.75 e=0.0211 alpha=318.7 a1=0.638 a2=1.1798 na=400 beta=-0.895 data=8498.dat nsplit=200 fwhm=53 q=2.503 az=-0.1863 > 8498.fit
+edisc m=0.75 e=0.0211 alpha=318.7 a1=0.638 a2=1.1798 na=400 beta=-0.895 data=8542.dat nsplit=200 fwhm=53 q=2.503 az=-0.1863 > 8542.fit
+edisc m=0.75 e=0.0211 alpha=318.7 a1=0.638 a2=1.1798 na=400 beta=-0.895 data=8662.dat nsplit=200 fwhm=53 q=2.503 az=-0.1863 > 8662.fit
+

@@ -1,0 +1,9 @@
+#!/bin/csh -f
+#
+# shell script to revise Makefile.in
+
+foreach file (`find . -name "Makefile.in"`)
+  sed -e 's%@ROCHE_PACKAGE@%@PACKAGE@%' $file > $file.new
+  sed -e 's%@ROCHE_DIR@%$(PACKNAM)%' $file.new > $file
+  rm $file.new
+end

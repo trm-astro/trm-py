@@ -20,7 +20,7 @@ TODO: Test this on multiplatform builds:
     1. If PLPLOT is installed then `0` and set path (recommended for linux)
     2. Build from source during the install select `1`,`2`, or `3` depending on desired build location and set path if required
     3. Use homebrew install `4` (recommended for mac) (`brew install plplot`)
-1. `poetry shell`, Install/activate the python envronment using poetry (required for conan)
+1. Install/activate the python envronment using poetry (required for conan)
 2. `cd src`, Move to the source directory
 3. `conan install . --build=missing`, Install PCRE2, llvm-openmp, and SOFA from conan
 4. `conan profile detect --force`, Set the conan build profile

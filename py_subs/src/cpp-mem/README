@@ -1,0 +1,13 @@
+
+'mem' is a C++ implementation of the F77 code memsys.
+
+Installation order: mem
+
+See www.astro.warwick.ac.uk/people/marsh/software for further info.
+
+Installation
+------------
+
+Main installation notes are in 'INSTALL'. If installing for the first time,
+run './bootstrap' before anything else which tries to get the autotools
+stuff configured.

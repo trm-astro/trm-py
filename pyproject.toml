@@ -1,13 +1,19 @@
 [tool.poetry]
 name = "trm-py"
 version = "0.1.0"
-description = "Python bindings to the trm-cpp library for precision astronomy"
+description = "Python package including bindings to the trm-cpp library for precision astronomy"
 authors = ["PipGrylls <pipgryllsastro@gmail.com>"]
 readme = "README.md"
+packages = [
+{ include = "trm_py", from = "." },
+{ include = "py_subs", from = "." },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 astropy = "^6.1.4"
+numpy = "^1.21.4"
+
 
 [tool.poetry.dev-dependencies]
 python = "^3.11"
@@ -15,13 +21,16 @@ conan = "^2.9.1"
 setuptools = "^75.6.0"
 
 [tool.poetry.build]
-script = "src/build.py"
+script = "py_subs/build.py"
 
 [build-system]
 requires = [
 "poetry-core",
 "setuptools>=75.6.0",
 "pybind11>=2.13.0",
+"conan>=2.9.1",
 ]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.scripts]
+build = "py_subs.build:main"

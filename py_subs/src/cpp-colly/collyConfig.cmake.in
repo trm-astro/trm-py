@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# Import targets from the installed export set
+include("${CMAKE_CURRENT_LIST_DIR}/collyTargets.cmake")
+
+# Set any additional variables if needed, such as version or paths
+set(colly_VERSION "@PROJECT_VERSION@")
