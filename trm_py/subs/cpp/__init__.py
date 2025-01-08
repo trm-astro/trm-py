@@ -1,7 +1,7 @@
 import os
 import struct
 import numpy as npy
-import trm.subs as subs
+from ..util import Odict
 
 """
 Various routines to help interface with data written by my C++
@@ -102,7 +102,7 @@ def read_header(fobj, endian=''):
         raise EOFError('read_header: EOF encountered at start of header read')
     (lmap,) = struct.unpack(endian + 'i', lstr)
     
-    head = subs.Odict()
+    head = Odict()
     for i in xrange(lmap):
         name  = read_string(fobj, endian)
         (itype,) = struct.unpack(endian + 'i', fobj.read(4))
@@ -127,7 +127,7 @@ def read_header(fobj, endian=''):
         elif itype == 8: # bool
             (value,) = struct.unpack(endian + 'B', fobj.read(1))
         elif itype == 9: # directory
-            value = subs.Odict()
+            value = Odict()
         elif itype == 10: # date
             raise CppError('read_header: date not enabled')
         elif itype == 11: # time
@@ -135,7 +135,7 @@ def read_header(fobj, endian=''):
             (hour,) = struct.unpack(endian + 'd', fobj.read(8))
             value   = (mjd, hour)
         elif itype == 12: # position
-            value = subs.Odict()
+            value = Odict()
             (value['RA'],)       = struct.unpack(endian + 'd', fobj.read(8))
             (value['Dec'],)      = struct.unpack(endian + 'd', fobj.read(8))
             value['System']      = 'ICRS'
@@ -154,7 +154,7 @@ def read_header(fobj, endian=''):
             (longitude,) = struct.unpack(endian + 'd', fobj.read(8))
             (latitude,)  = struct.unpack(endian + 'd', fobj.read(8))
             (height,)    = struct.unpack(endian + 'f', fobj.read(4))
-            value = subs.Odict()
+            value = Odict()
             value['Name']        = tname
             value['Observatory'] = sname
             value['Longitude']   = longitude
