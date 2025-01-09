@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include "py_subs.h"
+#include "py_roche.h"
 
 // Define the alias "py" for the namespace "pybind11"
 namespace py = pybind11;
@@ -8,7 +9,7 @@ void init_subs(py::module &);
 // void init_binary(py::module &);
 // void init_colly(py::module &);
 // void init_lcurve(py::module &);
-// void init_roche(py::module &);
+void init_roche(py::module &);
 
 
 PYBIND11_MODULE(py_subs, m) {
@@ -30,8 +31,8 @@ PYBIND11_MODULE(py_subs, m) {
     // py::module_ lcurve = m.def_submodule("lcurve", "interface to cpp-lcurve");
     // init_lcurve(m);
 
-    // // Initialize the submodule `roche`
-    // py::module_ roche = m.def_submodule("roche", "interface to cpp-roche");
-    // init_roche(m);
+    // Initialize the submodule `roche`
+    py::module_ roche = m.def_submodule("roche", "interface to cpp-roche");
+    init_roche(roche);
 
 }
