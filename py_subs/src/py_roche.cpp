@@ -11,6 +11,34 @@ namespace py = pybind11;
 void init_roche(py::module_ &m) {
     // Functions from croche.pxd
 
+    // TODO: Add a converter to convert Subs::Vec3 to a tuple/list and vice versa
+    py::class_<Subs::Vec3>(m, "Vec3")
+        .def(py::init<>())
+        .def(py::init<double, double, double>())
+        .def("x", (const double& (Vec3::*)() const) &Vec3::x)
+        .def("y", (const double& (Vec3::*)() const) &Vec3::y)
+        .def("z", (const double& (Vec3::*)() const) &Vec3::z)
+        .def("set", (void (Vec3::*)(double, double, double)) &Vec3::set)
+        .def("set", (void (Vec3::*)(double*)) &Vec3::set)
+        .def("get", &Vec3::get)
+        .def("__repr__", [](const Vec3 &v) {
+            return "<Vec3 x=" + std::to_string(v.x()) + 
+                   " y=" + std::to_string(v.y()) + 
+                   " z=" + std::to_string(v.z()) + ">";
+        })
+        .def(py::init([](py::list l) {
+            if (l.size() != 3) {
+                throw std::runtime_error("List must have exactly 3 elements");
+            }
+            return new Vec3(l[0].cast<double>(), l[1].cast<double>(), l[2].cast<double>());
+        }))
+        .def(py::init([](py::tuple t) {
+            if (t.size() != 3) {
+                throw std::runtime_error("Tuple must have exactly 3 elements");
+            }
+            return new Vec3(t[0].cast<double>(), t[1].cast<double>(), t[2].cast<double>());
+        }));
+
     // The STAR enum from roche.h
     py::enum_<Roche::STAR>(m, "STAR")
         .value("PRIMARY", Roche::STAR::PRIMARY)
@@ -190,6 +218,215 @@ void init_roche(py::module_ &m) {
             },
             "findphi(q, i, delta=1.e-6), computes deltaphi for a given mass ratio and inclination",
             py::arg("q"), py::arg("i"), py::arg("delta") = 1.e-6
+    );
 
+    m.def("fblink",
+        [](double q, double iangle, double phi, Subs::Vec3 r, double ffac=1., double acc=1.0e-4, Roche::STAR star=Roche::SECONDARY, int spin = 1){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.fblink: q <= 0");
+            }
+            if(iangle <= 0. || iangle > 90){
+                throw std::runtime_error("roche.fblink: iangle <= 0 or > 90");
+            }
+            if(ffac < 0. || ffac > 1.0){
+                throw std::runtime_error("roche.fblink: ffac < 2");
+            }
+            if(acc <= 0. || acc > 0.1){
+                throw std::runtime_error("roche.fblink: acc <= 0 or acc > 0.1");
+            }
+            if(star < 1 || star > 2){
+                throw std::runtime_error("roche.fblink: star must be either 1 or 2");
+            }
+
+            int eclipse;
+            if(Roche::fblink(q, star == 1 ? Roche::PRIMARY : Roche::SECONDARY, spin, ffac, acc, Roche::set_earth(iangle, phi), r))
+                eclipse = 1;
+            else
+                eclipse = 0;
+            return eclipse;
+        }
+        "fblink(q, i, phi, r, ffac=1., acc=1.e-4, star=2, spin=1), computes whether a point is eclipsed or not",
+        py::arg("q"), py::arg("iangle"), py::arg("phi"), py::arg("r"), py::arg("ffac") = 1., py::arg("acc") = 1.e-4, py::arg("star") = 2, py::arg("spin") = 1
+    );
+
+    m.def("ieng",
+        [](double q, double iangle, double x, double y, double z=0., double ffac=1., double delta=1.0e-7, double star=2, double spin=1){
+            // do assertation checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.ieng: q <= 0");
+            }
+            if(iangle <= 0. || iangle > 90){
+                throw std::runtime_error("roche.ieng: iangle <= 0 or > 90");
+            }
+            if(ffac < 0. || ffac > 1.0){
+                throw std::runtime_error("roche.ieng: ffac < 2");
+            }
+            if(delta <= 0.){
+                throw std::runtime_error("roche.ieng: delta <= 0");
+            }
+            if(star < 1 || star > 2){
+                throw std::runtime_error("roche.ieng: star must be either 1 or 2");
+            }
+            Subs::Vec3 r;
+            r.set(x, y, z);
+            double ingress, egress;
+            if(!Roche::ingress_egress(q, star == 1 ? Roche::PRIMARY : Roche::SECONDARY, spin, ffac, iangle, delta, r, ingress, egress)){
+                throw std::runtime_error("roche.ieng: point is not eclipsed");
+            }
+            return std::make_tuple(ingress, egress);
+        }
+        "ieng(q, iangle, x, y, z=0., ffac=1., delta=1.0e-7, star=2, spin=1), computes ingress and egress phases of a point",
+        py::arg("q"), py::arg("iangle"), py::arg("x"), py::arg("y"), py::arg("z") = 0., py::arg("ffac") = 1., py::arg("delta") = 1.0e-7, py::arg("star") = 2, py::arg("spin") = 1
+    );
+
+    m.def("lobe1",
+        [](double q, int n=200){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.lobe1: q <= 0");
+            }
+            if(n < 2){
+                throw std::runtime_error("roche.lobe1: n < 2");
+            }
+            double* x[n]
+            double* y[n]
+
+            Roche::lobe1(q, x, y, n);
+            return std::make_tuple(x, y);
+        }
+        "lobe1(q, n=200), returns tuple of x, y arrays representing the primary star's Roche lobe",
+        py::arg("q"), py::arg("n") = 200
+    );
+
+    m.def("lobe2",
+        [](double q, int n=200){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.lobe2: q <= 0");
+            }
+            if(n < 2){
+                throw std::runtime_error("roche.lobe2: n < 2");
+            }
+            double* x[n]
+            double* y[n]
+
+            Roche::lobe2(q, x, y, n);
+            return std::make_tuple(x, y);
+        }
+        "lobe2(q, n=200), returns tuple of x, y arrays representing the secondary star's Roche lobe",
+        py::arg("q"), py::arg("n") = 200
+    );
+    
+    m.def("rpot",
+        [](double q, const Subs::Vec3& r){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.rpot: q <= 0");
+            }
+            double rp = Roche::rpot(q, r);
+
+            return rp;
+        }
+        "rpot(q, r), computes Roche potential at a given point",
+        py::arg("q"), py::arg("r")
+        );
+    
+    m.def("rpot1",
+        [](double q, double spin, const Subs::Vec3& r){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.rpot1: q <= 0");
+            }
+            double rp = Roche::rpot1(q, spin, r);
+
+            return rp;
+        }
+        "rpot1(q, spin, r), computes asynchronous Roche potential, star 1",
+        py::arg("q"), py::arg("spin"), py::arg("r")
+        );
+    
+    m.def("rpot2",
+        [](double q, double spin, const Subs::Vec3& r){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.rpot2: q <= 0");
+            }
+            double rp = Roche::rpot2(q, spin, r);
+
+            return rp;
+        }
+        "rpot2(q, spin, r), computes asynchronous Roche potential, star 2",
+        py::arg("q"), py::arg("spin"), py::arg("r")
+    );
+
+    m.def("drpot",
+        [](double q, const Subs::Vec3& r){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.drpot: q <= 0");
+            }
+            Subs::Vec3 drp = Roche::drpot(q, r);
+
+            return std::make_tuple(drp.x(), drp.y(), drp.z());
+        }
+        "drpot(q, r), computes derivative of Roche potential at a given point",
+        py::arg("q"), py::arg("r")
+    );
+
+    m.def("drpot1",
+        [](double q, double spin, const Subs::Vec3& r){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.drpot1: q <= 0");
+            }
+            Subs::Vec3 drp = Roche::drpot1(q, spin, r);
+
+            return std::make_tuple(drp.x(), drp.y(), drp.z());
+        }
+        "drpot1(q, spin, r), computes derivative of asynchronous Roche potential, star 1",
+        py::arg("q"), py::arg("spin"), py::arg("r")
+    );
+
+    m.def("drpot2",
+        [](double q, double spin, const Subs::Vec3& r){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.drpot2: q <= 0");
+            }
+            Subs::Vec3 drp = Roche::drpot2(q, spin, r);
+
+            return std::make_tuple(drp.x(), drp.y(), drp.z());
+        }
+        "drpot2(q, spin, r), computes derivative of asynchronous Roche potential, star 2",
+        py::arg("q"), py::arg("spin"), py::arg("r")
+    );
+
+    m.def("shadow",
+        [](double q, double iangle, double phi, int n=200, double dist=5., double acc=1.e-4){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.shadow: q <= 0");
+            }
+            if(iangle <= 0. || iangle > 90){
+                throw std::runtime_error("roche.shadow: iangle <= 0 or > 90");
+            }
+            if(n < 2){
+                throw std::runtime_error("roche.shadow: n < 2");
+            }
+            if(dist <= 0.){
+                throw std::runtime_error("roche.shadow: dist <= 0");
+            }
+            if(acc <= 0. || acc > 0.1){
+                throw std::runtime_error("roche.shadow: acc <= 0 or acc > 0.1");
+            }
+            double* x[n];
+            double* y[n];
+            bool* s[n];
+            Roche::roche_shadow(q, iangle, phi, x, y, n, dist, acc);
+            return std::make_tuple(x, y, s);
+        }
     )
+
+
 }
