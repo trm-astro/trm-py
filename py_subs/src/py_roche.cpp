@@ -426,7 +426,352 @@ void init_roche(py::module_ &m) {
             Roche::roche_shadow(q, iangle, phi, x, y, n, dist, acc);
             return std::make_tuple(x, y, s);
         }
-    )
+        "shadow(q, iangle, phi, n=200, dist=5., acc=1.e-4), 
+        Compute roche shadow region in equatorial plane,
+        retuns tuple of x, y, bool arrays representing the Roche lobe shadow and if it is genuine shade",
+        py::arg("q"), py::arg("iangle"), py::arg("phi"), py::arg("n") = 200, py::arg("dist") = 5., py::arg("acc") = 1.e-4
+    );
 
+    m.def("streamr",
+        [](double q, double rad, int n=200){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.streamr: q <= 0");
+            }
+            if(rad < 0. || rad > 1.){
+                throw std::runtime_error("roche.streamr: rad < 0 or > 1.");
+            }
+            if(n < 2){
+                throw std::runtime_error("roche.streamr: n < 2");
+            }
+            double* x[n];
+            double* y[n];
+            Roche::streamr(q, rad, x, y, n);
+            return std::make_tuple(x, y);
+        }
+        "streamr(q, rad, n=200), returns tuple of x, y arrays representing the gas stream. q=M2/M1, rad=minimum radius to aim for",
+        py::arg("q"), py::arg("rad"), py::arg("n") = 200
+    );
+
+    m.def("stream",
+        [](double q, double step, int n=200){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.stream: q <= 0");
+            }
+            if(step < 0. || step > 1.){
+                throw std::runtime_error("roche.stream: rad < 0 or > 1.");
+            }
+            if(n < 2){
+                throw std::runtime_error("roche.stream: n < 2");
+            }
+            double* x[n];
+            double* y[n];
+            Roche::stream(q, rad, x, y, n);
+            return std::make_tuple(x, y);
+        }
+        "x,y = stream(q, step, n=200), returns arrays of the gas stream. q = M2/M1, step=distance between adjacent points."
+        py::arg("q"), py::arg("rad"), py::arg("n") = 200
+    );
+
+    m.def("astream",
+        [](double q, int type, Subs::Vec3& r0, Subs::Vec3& v0, double step, int n=200, double acc=1.0e-9){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.astream: q < 0");
+            }
+            if(step < 0. || step > 1.){
+                throw std::runtime_error("roche.astream: step<0 or step>1");
+            }
+            if(n<2){
+                throw std::runtime_error("roche.astream n < 2");
+            }
+            if(type<0 || type>3){
+                throw std::runtime_error("roche.astream: type out of range 0 to 3");
+            }
+            if(acc<=0 || acc>=0.1){
+                throw std::runtime_error("roche.astream: acc<=0 and acc>=0.1")
+            }
+
+            double* x[n];
+            double* y[n];
+
+            double xold, yold, apx, apy;
+            double time, dist, tdid, tnext, frac, ttry;
+            double vel, smax;
+            int lp=0;
+            smax = step/2.
+            if(smax>1.0e-3){
+                smax=1.0e-3;
+            }
+            return std::make_tuple(x, y);
+        }
+        "x,y = astream(q, type, r0, v0, step, n, acc), returns arrays of the gas stream. q = M2/M1, type=0,1,2,3 for primary, secondary, L1, L2, r0=initial position, v0=initial velocity, step=distance between adjacent points, n=number of points, acc=accuracy",
+        py::arg("q"), py::arg("type"), py::arg("r0"), py::arg("v0"), py::arg("step"), py::arg("n") = 200, py::arg("acc") = 1.0e-9
+    );
+
+    m.def("strmnx",
+        [](double q, int n=1, acc=1.0e-7){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.strmnx: q <= 0");
+            }
+            if(n < 1){
+                throw std::runtime_error("roche.strmnx: n < 1");
+            }
+            if(acc <= 0. ){
+                throw std::runtime_error("roche.strmnx: acc <= 0 ");
+            }
+            Subs::Vec3 r, v;
+            Roche::strinit(q, r, v);
+            for(int i=0; i<n; i++){
+                Roche::strmnx(q, r, v, acc);
+            }
+            double tvx1, tvy1, tvx2, tvy2;
+            Roche::vtrans(q, 1, r.x(), r.y(), v.x(), v.y(), tvx1, tvy1);
+            Roche::vtrans(q, 2, r.x(), r.y(), v.x(), v.y(), tvx1, tvy1);
+            return std::make_tuple(r.x(), r.y(), tvx1, tvy1, tvx2, tvy2);
+        }
+        "r.x, r.y, tvx1, tvy1, tvx2, tvy2 = strmnx(q, n=1, acc=1.0e-7), returns position and velocity of n-th turning point of stream",
+        py::arg("q"), py::arg("n") = 1, py::arg("acc") = 1.0e-7
+    );
+
+    m.def("vlobe1",
+        [](double q, int n=200){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.vlobe1: q <= 0");
+            }
+            if(n < 2){
+                throw std::runtime_error("roche.vlobe1: n < 2");
+            }
+            double* x[n];
+            double* y[n];
+            Roche::vlobe1(q, x, y, n);
+            return std::make_tuple(x, y);
+        }
+        "vlobe1(q, n=200), q=M2/M1 returns tuple of x, y arrays representing the primary star's Roche lobe",
+        py::arg("q"), py::arg("n") = 200
+    );
+
+    m.def("vlobe2",
+        [](double q, int n=200){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.vlobe2: q <= 0");
+            }
+            if(n < 2){
+                throw std::runtime_error("roche.vlobe2: n < 2");
+            }
+            double* x[n];
+            double* y[n];
+            Roche::vlobe2(q, x, y, n);
+            return std::make_tuple(x, y);
+        }
+        "vlobe2(q, n=200), q=M2/M1 returns tuple of x, y arrays representing the secondary star's Roche lobe",
+        py::arg("q"), py::arg("n") = 200
+    );
+
+    m.def("vstream",
+        [](double q, double step=0.01, int vtype=1, int n=60){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.vstream: q <= 0");
+            }
+            if(step < 0. || step > 1.){
+                throw std::runtime_error("roche.vstream: step < 0 or step > 1");
+            }
+            if(vtype == 1 || vtype == 2){
+                throw std::runtime_error("roche.vstream: vtype not 1 or 2");
+            }
+            if(n < 2){
+                throw std::runtime_error("roche.vstream: n < 2");
+            }
+
+            double* vx[n];
+            double* vy[n];
+            Roche::vstrreg(q, step, vx, vy, vtype, n);
+            return std::make_tuple(vx, vy);
+        }
+        "vx, vy = vstream(q, step=0.01, vtype=1, n=60), returns arrays of postions of the gas stream in velocity space. q=M2/M1, step is measured as a fraction of the distance to the inner Lagrangian point from the primary star., vtype=1 is the straight velocity of the gas stream while vtype=2 is the velocity of the disc along the stream, n=number of points in output",
+        py::arg("q"), py::arg("step") = 0.01, py::arg("vtype") = 1, py::arg("n") = 60
+    );
+
+    m.def("pvstream",
+        [](double q, double step=0.01, int vtype=1, int n=60){
+            // do assertion checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.pvstream: q <= 0");
+            }
+            if(step < 0. || step > 1.){
+                throw std::runtime_error("roche.pvstream: step < 0 or step > 1");
+            }
+            if(vtype == 1 || vtype == 2){
+                throw std::runtime_error("roche.pvstream: vtype not 1 or 2");
+            }
+            if(n < 2){
+                throw std::runtime_error("roche.pvstream: n < 2");
+            }
+
+            double* vx[n];
+            double* vy[n];
+            double* x[n];
+            double* y[n];
+            double* t_arr[n];
+            double* jc_arr[n];
+
+            double TLOC = 1.0e-8;
+            double RLOC = 1.0e-8;
+            int i, decr;
+            double dt, tvx, tvy, rend, rnext;
+
+            double rl1 = Roche::xl1(q);
+
+            Subs::Vec3 r, v, rm, vm;
+            Roche::pvstrreg(q, step, vx, vy, vtype, n);
+
+            //do initial iteration
+            Roche::vtrans(q, vtype, rl1, 0., 0., 0., tvx, tvy);
+            x[0] = rl1;
+            y[0] = 0.;
+            vx[0] = tvx;
+            vy[0] = tvy;
+            t[0] = 0.;
+
+            //loopvar
+            i = 1;
+            
+            rnext = rl1*(1.0-step);
+            decr = 1;
+
+            Roche::strinit(q, r, v);
+            jc[0] = Roche::jacobi(q, r, v);
+
+            while(i < n){
+                dt = Roche::stradv(q, r, v, rnext, RLOC, 1.0e-3);
+                Roche::vtrans(q, vtype, r.x(), r.y(), v.x(), v.y(), tvx, tvy);
+                x[i] = r.x();
+                y[i] = r.y();
+                vx[i] = tvx;
+                vy[i] = tvy;
+                t[i] = t[i-1] + dt;
+                jc[i] = Roche::jacobi(q, r, v);
+                i++;
+                if (decr == 1){
+                    rnext = rnext - rl1*step
+                }else{
+                    rnext = rnext + rl1*step;
+                }
+
+                //locate and store next turning point
+
+                rm = r;
+                vm = v;
+                Roche::strmnx(q, rm, vm, TLOC);
+                rend = rm.length();
+
+                //loop over all radii wanted before next turning point
+                while(
+                    (i < n) && 
+                    (
+                        (decr && (rnext > rend)) || 
+                        ((!decr) && (rend > rnext))
+                    )
+                ){
+                    dt = Roche::stradv(q, r, v, rnext, RLOC, 1.0e-3);
+                    Roche::vtrans(q, vtype, r.x(), r.y(), v.x(), v.y(), tvx, tvy);
+                    x[i] = r.x();
+                    y[i] = r.y();
+                    vx[i] = tvx;
+                    vy[i] = tvy;
+                    t[i] = t[i-1] + dt;
+                    jc[i] = Roche::jacobi(q,r,v)
+                    i++;
+                    if (decr == 1){
+                        rnext = rnext - rl1*step
+                    }else{
+                        rnext = rnext + rl1*step;
+                    }
+                }
+                if (decr == 1){
+                    rnext = rnext - rl1*step
+                }else{
+                    rnext = rnext + rl1*step;
+                }
+                r = rm
+                v = vm
+                decr = !decr
+            }
+            return std::make_tuple(x_arr, y_arr, vx_arr, vy_arr, t_arr, jc_arr);
+        },
+        "x, y, vx, vy, t, jac = pvstream(q, step=0.01, type=1, n=60), Returns arrays of positions, velocities, time, and jacobi constant along the gas stream",
+        py::arg("q") py::arg("step") = 0.01, py::arg("vtype")=1, py::arg("n")=60
+    );
+
+    m.def("xl1",
+        [](double q){
+            //assertation checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.xl1: q <= 0");
+            }
+            return Roche::xl1(q)
+        }
+        "Calculate the inner Lagrangian point distance, q = M2/M1"
+        py::arg("q")
+    );
+
+    m.def("xl2",
+        [](double q){
+            //assertation checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.xl2: q <= 0");
+            }
+            return Roche::xl2(q)
+        }
+        "Calculate the L2 point distance, q = M2/M1"
+        py::arg("q")
+    );
+
+    m.def("xl3",
+        [](double q){
+            //assertation checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.xl3: q <= 0");
+            }
+            return Roche::xl3(q)
+        }
+        "Calculate the L3 point distance, q = M2/M1"
+        py::arg("q")
+    );
+
+    m.def("xl11",
+        [](double q, double spin){
+            //assertation checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.xl12: q <= 0");
+            }
+            if(spin <= 0. || 1. < spin){
+                throw std::runtime_error("roche.xl11: spin <=0 or spin > 1")
+            }
+            return Roche::xl11(q,spin)
+        }
+        "Calculate the L1 point distance if primary is asynchronous, q = M2/M1, spin = ratio of spin/orbital of primary"
+        py::arg("q"), py::arg("spin")
+    );
+
+    m.def("xl12",
+        [](double q, double spin){
+            //assertation checks
+            if(q <= 0.){
+                throw std::runtime_error("roche.xl12: q <= 0");
+            }
+            if(spin <= 0. || 1. < spin){
+                throw std::runtime_error("roche.xl12: spin <=0 or spin > 1")
+            }
+            return Roche::xl12(q,spin)
+        }
+        "Calculate the L2 point distance if primary is asynchronous, q = M2/M1, spin = ratio of spin/orbital of primary"
+        py::arg("q"), py::arg("spin")
+    );
 
 }
