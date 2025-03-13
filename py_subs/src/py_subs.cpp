@@ -27,18 +27,18 @@ void init_subs(py::module_ &m) {
     );  // Documentation for array input
     
     // Overload resolution for the same name 'gammaq'
-        m.def("gammq",
-            [](double a, double x) {
-                return Subs::gammq(a, x);
-            },
-            "The incomplete gamma function from cpp-subs",
-            py::arg("a"), py::arg("x")
-        );
-        m.def("gammq", 
-            [](double a, std::vector<double>& x) { // Lambda for vectorized version
-                double* result; // To store results
-                Subs::gammq(a, x.data(), result, x.size()); // Call the vectorized gammaq
-                return result; // Return the result
-            }, 
-            "The incomplete gamma function from cpp-subs");  // Documentation for array input
+    m.def("gammq",
+        [](double a, double x) {
+            return Subs::gammq(a, x);
+        },
+        "The incomplete gamma function from cpp-subs",
+        py::arg("a"), py::arg("x")
+    );
+    m.def("gammq", 
+        [](double a, std::vector<double>& x) { // Lambda for vectorized version
+            double* result; // To store results
+            Subs::gammq(a, x.data(), result, x.size()); // Call the vectorized gammaq
+            return result; // Return the result
+        }, 
+        "The incomplete gamma function from cpp-subs");
 }

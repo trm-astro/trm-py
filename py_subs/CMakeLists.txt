@@ -4,8 +4,13 @@
 cmake_minimum_required(VERSION 3.27)
 
 project(py-subs)
+message("cmake lists for py_subs")
 
+# These must be in order to build the subdirectories
+# roche -> binary -> subs
 add_subdirectory(src/cpp-subs)
+add_subdirectory(src/cpp-binary)
+add_subdirectory(src/cpp-roche)
 
 # Find the module devlopment requirements
 set(PYBIND11_FINDPYTHON ON)
@@ -17,7 +22,7 @@ find_package(pybind11 CONFIG REQUIRED)
 
 # Get all the targeted CPP code files
 file(GLOB PY_SUBS_SOURCES
-    src/*.cpp 
+    src/*.cpp
     src/*.h
 )
 
@@ -30,8 +35,10 @@ pybind11_add_module(py_subs ${PY_SUBS_SOURCES})
 target_link_libraries(py_subs 
     PUBLIC
         subs
+        roche
         pybind11::headers
 )
+
 target_include_directories(py_subs
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

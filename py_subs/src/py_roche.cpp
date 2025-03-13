@@ -15,13 +15,13 @@ void init_roche(py::module_ &m) {
     py::class_<Subs::Vec3>(m, "Vec3")
         .def(py::init<>())
         .def(py::init<double, double, double>())
-        .def("x", (const double& (Vec3::*)() const) &Vec3::x)
-        .def("y", (const double& (Vec3::*)() const) &Vec3::y)
-        .def("z", (const double& (Vec3::*)() const) &Vec3::z)
-        .def("set", (void (Vec3::*)(double, double, double)) &Vec3::set)
-        .def("set", (void (Vec3::*)(double*)) &Vec3::set)
-        .def("get", &Vec3::get)
-        .def("__repr__", [](const Vec3 &v) {
+        .def("x", (const double& (Subs::Vec3::*)() const) &Subs::Vec3::x)
+        .def("y", (const double& (Subs::Vec3::*)() const) &Subs::Vec3::y)
+        .def("z", (const double& (Subs::Vec3::*)() const) &Subs::Vec3::z)
+        .def("set", (void (Subs::Vec3::*)(double, double, double)) &Subs::Vec3::set)
+        .def("set", (void (Subs::Vec3::*)(double*)) &Subs::Vec3::set)
+        .def("get", &Subs::Vec3::get)
+        .def("__repr__", [](const Subs::Vec3 &v) {
             return "<Vec3 x=" + std::to_string(v.x()) + 
                    " y=" + std::to_string(v.y()) + 
                    " z=" + std::to_string(v.z()) + ">";
@@ -30,13 +30,13 @@ void init_roche(py::module_ &m) {
             if (l.size() != 3) {
                 throw std::runtime_error("List must have exactly 3 elements");
             }
-            return new Vec3(l[0].cast<double>(), l[1].cast<double>(), l[2].cast<double>());
+            return new Subs::Vec3(l[0].cast<double>(), l[1].cast<double>(), l[2].cast<double>());
         }))
         .def(py::init([](py::tuple t) {
             if (t.size() != 3) {
                 throw std::runtime_error("Tuple must have exactly 3 elements");
             }
-            return new Vec3(t[0].cast<double>(), t[1].cast<double>(), t[2].cast<double>());
+            return new Subs::Vec3(t[0].cast<double>(), t[1].cast<double>(), t[2].cast<double>());
         }));
 
     // The STAR enum from roche.h
@@ -54,16 +54,7 @@ void init_roche(py::module_ &m) {
                 Roche::face(q, star, spin, dirn, rref, pref, acc, pvec, dvec, r, g);
                 return std::make_tuple(pvec, dvec, r, g);
             },
-            "p,d,r,g = face(q, spin, dirn, rref, pref, star=2, acc=1.e-5), returns position and direction of element of specific Roche potential.
-            q      -- mass ratio = M2/M1
-            spin   -- ratio spin/orbital frequency
-            dirn   -- direction (a Vec3) to take from centre of mass of star in question.
-            rref   -- reference radius greater than any radius of potential in question.
-            pref   -- the potential to aim for.
-            star   -- 1 or 2 for primary or secondary star. acc    -- accuracy in terms of separation of location.
-
-            Returns p = position, d = direction perpendicular to face, r = radius from centre of mass, g = gravity.
-            ",
+            "p,d,r,g = face(q, spin, dirn, rref, pref, star=2, acc=1.e-5), returns position and direction of element of specific Roche potential. q      -- mass ratio = M2/M1 spin   -- ratio spin/orbital frequency dirn   -- direction (a Vec3) to take from centre of mass of star in question. rref   -- reference radius greater than any radius of potential in question. pref   -- the potential to aim for. star   -- 1 or 2 for primary or secondary star. acc    -- accuracy in terms of separation of location. Returns p = position, d = direction perpendicular to face, r = radius from centre of mass, g = gravity.",
             py::arg("q"), py::arg("star"), py::arg("spin"), py::arg("dirn"), py::arg("rref"), py::arg("pref"), py::arg("acc")
     );
 
@@ -80,32 +71,17 @@ void init_roche(py::module_ &m) {
                 }
 
             },
-            "returns position and stream velocity on stream at radius rad
-
-            (x,y,vx,vy) = bspot(q, rad, acc=1.e-7)
-
-            Args:
-                q (float): mass ratio = M2/M1
-                rad (float): radius to aim for
-                acc (float[optional]): computationa accuracy parameter",
+            "returns position and stream velocity on stream at radius rad (x,y,vx,vy) = bspot(q, rad, acc=1.e-7) Args: q (float): mass ratio = M2/M1 rad (float): radius to aim for acc (float[optional]): computationa accuracy parameter",
             py::arg("q"), py::arg("rad"), py::arg("acc") = 1.e-7
     );    
 
     m.def("ref_sphere",
             [](double q, double spin, double ffac, int star = 2) {
                 double rref, pref;
-                Roche::ref_sphere(q, star == 1 ? Roche::STAR::PRIMARY : Roche::STAR::SECONDARY, spin, ffac, &rref, &pref);
+                Roche::ref_sphere(q, star == 1 ? Roche::STAR::PRIMARY : Roche::STAR::SECONDARY, spin, ffac, rref, pref);
                 return std::make_tuple(rref, pref);
             },
-            "    
-            (rref,pref) = ref_sphere(q, spin, ffac, star=2), returns reference radius and potential needed for face.
-            q      -- mass ratio = M2/M1
-            spin   -- ratio spin/orbital frequency
-            ffac   -- linear filling factor of star in question, defined as the radius of the star along the line of
-                    centres towards its companion divided by the Roche lobe radius in that direction. For spin = 1
-                    the latter is simply the distance to the L1 point, but otherwise you need to use modified L1
-                    radii as returned by xl11 or xl12.
-            star   -- 1 or 2 for primary or secondary star.",
+            "(rref,pref) = ref_sphere(q, spin, ffac, star=2), returns reference radius and potential needed for face. q      -- mass ratio = M2/M1 spin   -- ratio spin/orbital frequency ffac   -- linear filling factor of star in question, defined as the radius of the star along the line of centres towards its companion divided by the Roche lobe radius in that direction. For spin = 1 the latter is simply the distance to the L1 point, but otherwise you need to use modified L1 radii as returned by xl11 or xl12. star   -- 1 or 2 for primary or secondary star.",
             py::arg("q"), py::arg("spin"), py::arg("ffac"), py::arg("star") = 2
     );
 
@@ -149,13 +125,12 @@ void init_roche(py::module_ &m) {
                 }
                 return iangle; 
             },
-        "findi(q, deltaphi, acc=1.e-4, di=1.e-5), 
-        computes inclination for a given mass ratio and phase width",
+        "findi(q, deltaphi, acc=1.e-4, di=1.e-5), computes inclination for a given mass ratio and phase width",
         py::arg("q"), py::arg("deltaphi"), py::arg("acc") = 1.e-4, py::arg("di") = 1.e-5
     );
 
     m.def("findq",
-            [](double i, double deltaphi, acc=1.e-4, dq=1.0e-5, qlo=0.001, qhi=2.){
+            [](double i, double deltaphi, double acc=1.e-4, double dq=1.0e-5, double qlo=0.001, double qhi=2.){
                 // do assertion checks
                 if(i <= 0. || i > 90.){
                     throw std::runtime_error("roche.findq: i out of range 0 to 90");
@@ -190,10 +165,9 @@ void init_roche(py::module_ &m) {
                     }
                     q = (qlo+qhi)/2.;
                 }
-                return q
+                return q;
             },
-            "findi(q, deltaphi, acc=1.e-4, di=1.e-5),
-            computes mass ratio q for a given phase width and inclination",
+            "findi(q, deltaphi, acc=1.e-4, di=1.e-5), computes mass ratio q for a given phase width and inclination",
             py::arg("i"), py::arg("deltaphi"), py::arg("acc") = 1.e-4, py::arg("dq") = 1.e-5, py::arg("qlo") = 0.005, py::arg("qhi") = 2.
     );
 
@@ -235,17 +209,16 @@ void init_roche(py::module_ &m) {
             if(acc <= 0. || acc > 0.1){
                 throw std::runtime_error("roche.fblink: acc <= 0 or acc > 0.1");
             }
-            if(star < 1 || star > 2){
+            if(!(star == Roche::PRIMARY || star == Roche::SECONDARY)){
                 throw std::runtime_error("roche.fblink: star must be either 1 or 2");
             }
 
-            int eclipse;
-            if(Roche::fblink(q, star == 1 ? Roche::PRIMARY : Roche::SECONDARY, spin, ffac, acc, Roche::set_earth(iangle, phi), r))
-                eclipse = 1;
-            else
-                eclipse = 0;
-            return eclipse;
-        }
+            if(Roche::fblink(q, star == 1 ? Roche::PRIMARY : Roche::SECONDARY, spin, ffac, acc, Roche::set_earth(iangle, phi), r)){
+                return 1;
+            }else{
+                return 0;
+            }
+        },
         "fblink(q, i, phi, r, ffac=1., acc=1.e-4, star=2, spin=1), computes whether a point is eclipsed or not",
         py::arg("q"), py::arg("iangle"), py::arg("phi"), py::arg("r"), py::arg("ffac") = 1., py::arg("acc") = 1.e-4, py::arg("star") = 2, py::arg("spin") = 1
     );
@@ -275,7 +248,7 @@ void init_roche(py::module_ &m) {
                 throw std::runtime_error("roche.ieng: point is not eclipsed");
             }
             return std::make_tuple(ingress, egress);
-        }
+        },
         "ieng(q, iangle, x, y, z=0., ffac=1., delta=1.0e-7, star=2, spin=1), computes ingress and egress phases of a point",
         py::arg("q"), py::arg("iangle"), py::arg("x"), py::arg("y"), py::arg("z") = 0., py::arg("ffac") = 1., py::arg("delta") = 1.0e-7, py::arg("star") = 2, py::arg("spin") = 1
     );
@@ -289,12 +262,12 @@ void init_roche(py::module_ &m) {
             if(n < 2){
                 throw std::runtime_error("roche.lobe1: n < 2");
             }
-            double* x[n]
-            double* y[n]
+            float* x= new float[n];
+            float* y= new float[n];
 
             Roche::lobe1(q, x, y, n);
             return std::make_tuple(x, y);
-        }
+        },
         "lobe1(q, n=200), returns tuple of x, y arrays representing the primary star's Roche lobe",
         py::arg("q"), py::arg("n") = 200
     );
@@ -308,12 +281,12 @@ void init_roche(py::module_ &m) {
             if(n < 2){
                 throw std::runtime_error("roche.lobe2: n < 2");
             }
-            double* x[n]
-            double* y[n]
+            float* x= new float[n];
+            float* y= new float[n];
 
             Roche::lobe2(q, x, y, n);
             return std::make_tuple(x, y);
-        }
+        },
         "lobe2(q, n=200), returns tuple of x, y arrays representing the secondary star's Roche lobe",
         py::arg("q"), py::arg("n") = 200
     );
@@ -327,7 +300,7 @@ void init_roche(py::module_ &m) {
             double rp = Roche::rpot(q, r);
 
             return rp;
-        }
+        },
         "rpot(q, r), computes Roche potential at a given point",
         py::arg("q"), py::arg("r")
         );
@@ -341,7 +314,7 @@ void init_roche(py::module_ &m) {
             double rp = Roche::rpot1(q, spin, r);
 
             return rp;
-        }
+        },
         "rpot1(q, spin, r), computes asynchronous Roche potential, star 1",
         py::arg("q"), py::arg("spin"), py::arg("r")
         );
@@ -355,7 +328,7 @@ void init_roche(py::module_ &m) {
             double rp = Roche::rpot2(q, spin, r);
 
             return rp;
-        }
+        },
         "rpot2(q, spin, r), computes asynchronous Roche potential, star 2",
         py::arg("q"), py::arg("spin"), py::arg("r")
     );
@@ -369,7 +342,7 @@ void init_roche(py::module_ &m) {
             Subs::Vec3 drp = Roche::drpot(q, r);
 
             return std::make_tuple(drp.x(), drp.y(), drp.z());
-        }
+        },
         "drpot(q, r), computes derivative of Roche potential at a given point",
         py::arg("q"), py::arg("r")
     );
@@ -383,7 +356,7 @@ void init_roche(py::module_ &m) {
             Subs::Vec3 drp = Roche::drpot1(q, spin, r);
 
             return std::make_tuple(drp.x(), drp.y(), drp.z());
-        }
+        },
         "drpot1(q, spin, r), computes derivative of asynchronous Roche potential, star 1",
         py::arg("q"), py::arg("spin"), py::arg("r")
     );
@@ -397,7 +370,7 @@ void init_roche(py::module_ &m) {
             Subs::Vec3 drp = Roche::drpot2(q, spin, r);
 
             return std::make_tuple(drp.x(), drp.y(), drp.z());
-        }
+        },
         "drpot2(q, spin, r), computes derivative of asynchronous Roche potential, star 2",
         py::arg("q"), py::arg("spin"), py::arg("r")
     );
@@ -420,15 +393,13 @@ void init_roche(py::module_ &m) {
             if(acc <= 0. || acc > 0.1){
                 throw std::runtime_error("roche.shadow: acc <= 0 or acc > 0.1");
             }
-            double* x[n];
-            double* y[n];
-            bool* s[n];
-            Roche::roche_shadow(q, iangle, phi, x, y, n, dist, acc);
+            float* x= new float[n];
+            float* y= new float[n];
+            bool* s= new bool[n];
+            Roche::roche_shadow(q, iangle, phi, dist, acc, x, y, s, n);
             return std::make_tuple(x, y, s);
-        }
-        "shadow(q, iangle, phi, n=200, dist=5., acc=1.e-4), 
-        Compute roche shadow region in equatorial plane,
-        retuns tuple of x, y, bool arrays representing the Roche lobe shadow and if it is genuine shade",
+        },
+        "shadow(q, iangle, phi, n=200, dist=5., acc=1.e-4), Compute roche shadow region in equatorial plane, retuns tuple of x, y, bool arrays representing the Roche lobe shadow and if it is genuine shade",
         py::arg("q"), py::arg("iangle"), py::arg("phi"), py::arg("n") = 200, py::arg("dist") = 5., py::arg("acc") = 1.e-4
     );
 
@@ -444,11 +415,11 @@ void init_roche(py::module_ &m) {
             if(n < 2){
                 throw std::runtime_error("roche.streamr: n < 2");
             }
-            double* x[n];
-            double* y[n];
+            float* x= new float[n];
+            float* y= new float[n];
             Roche::streamr(q, rad, x, y, n);
             return std::make_tuple(x, y);
-        }
+        },
         "streamr(q, rad, n=200), returns tuple of x, y arrays representing the gas stream. q=M2/M1, rad=minimum radius to aim for",
         py::arg("q"), py::arg("rad"), py::arg("n") = 200
     );
@@ -465,12 +436,12 @@ void init_roche(py::module_ &m) {
             if(n < 2){
                 throw std::runtime_error("roche.stream: n < 2");
             }
-            double* x[n];
-            double* y[n];
-            Roche::stream(q, rad, x, y, n);
+            float* x= new float[n];
+            float* y= new float[n];
+            Roche::stream(q, step, x, y, n);
             return std::make_tuple(x, y);
-        }
-        "x,y = stream(q, step, n=200), returns arrays of the gas stream. q = M2/M1, step=distance between adjacent points."
+        },
+        "x,y = stream(q, step, n=200), returns arrays of the gas stream. q = M2/M1, step=distance between adjacent points.",
         py::arg("q"), py::arg("rad"), py::arg("n") = 200
     );
 
@@ -490,28 +461,28 @@ void init_roche(py::module_ &m) {
                 throw std::runtime_error("roche.astream: type out of range 0 to 3");
             }
             if(acc<=0 || acc>=0.1){
-                throw std::runtime_error("roche.astream: acc<=0 and acc>=0.1")
+                throw std::runtime_error("roche.astream: acc<=0 and acc>=0.1");
             }
 
-            double* x[n];
-            double* y[n];
+            float* x= new float[n];
+            float* y= new float[n];
 
             double xold, yold, apx, apy;
             double time, dist, tdid, tnext, frac, ttry;
             double vel, smax;
             int lp=0;
-            smax = step/2.
+            smax = step/2.;
             if(smax>1.0e-3){
                 smax=1.0e-3;
             }
             return std::make_tuple(x, y);
-        }
+        },
         "x,y = astream(q, type, r0, v0, step, n, acc), returns arrays of the gas stream. q = M2/M1, type=0,1,2,3 for primary, secondary, L1, L2, r0=initial position, v0=initial velocity, step=distance between adjacent points, n=number of points, acc=accuracy",
         py::arg("q"), py::arg("type"), py::arg("r0"), py::arg("v0"), py::arg("step"), py::arg("n") = 200, py::arg("acc") = 1.0e-9
     );
 
     m.def("strmnx",
-        [](double q, int n=1, acc=1.0e-7){
+        [](double q, int n=1, double acc=1.0e-7){
             // do assertion checks
             if(q <= 0.){
                 throw std::runtime_error("roche.strmnx: q <= 0");
@@ -531,7 +502,7 @@ void init_roche(py::module_ &m) {
             Roche::vtrans(q, 1, r.x(), r.y(), v.x(), v.y(), tvx1, tvy1);
             Roche::vtrans(q, 2, r.x(), r.y(), v.x(), v.y(), tvx1, tvy1);
             return std::make_tuple(r.x(), r.y(), tvx1, tvy1, tvx2, tvy2);
-        }
+        },
         "r.x, r.y, tvx1, tvy1, tvx2, tvy2 = strmnx(q, n=1, acc=1.0e-7), returns position and velocity of n-th turning point of stream",
         py::arg("q"), py::arg("n") = 1, py::arg("acc") = 1.0e-7
     );
@@ -545,11 +516,11 @@ void init_roche(py::module_ &m) {
             if(n < 2){
                 throw std::runtime_error("roche.vlobe1: n < 2");
             }
-            double* x[n];
-            double* y[n];
+            float* x= new float[n];
+            float* y= new float[n];
             Roche::vlobe1(q, x, y, n);
             return std::make_tuple(x, y);
-        }
+        },
         "vlobe1(q, n=200), q=M2/M1 returns tuple of x, y arrays representing the primary star's Roche lobe",
         py::arg("q"), py::arg("n") = 200
     );
@@ -563,11 +534,11 @@ void init_roche(py::module_ &m) {
             if(n < 2){
                 throw std::runtime_error("roche.vlobe2: n < 2");
             }
-            double* x[n];
-            double* y[n];
+            float* x= new float[n];
+            float* y= new float[n];
             Roche::vlobe2(q, x, y, n);
             return std::make_tuple(x, y);
-        }
+        },
         "vlobe2(q, n=200), q=M2/M1 returns tuple of x, y arrays representing the secondary star's Roche lobe",
         py::arg("q"), py::arg("n") = 200
     );
@@ -587,12 +558,12 @@ void init_roche(py::module_ &m) {
             if(n < 2){
                 throw std::runtime_error("roche.vstream: n < 2");
             }
+            float* vx= new float[n];
+            float* vy= new float[n];
 
-            double* vx[n];
-            double* vy[n];
             Roche::vstrreg(q, step, vx, vy, vtype, n);
             return std::make_tuple(vx, vy);
-        }
+        },
         "vx, vy = vstream(q, step=0.01, vtype=1, n=60), returns arrays of postions of the gas stream in velocity space. q=M2/M1, step is measured as a fraction of the distance to the inner Lagrangian point from the primary star., vtype=1 is the straight velocity of the gas stream while vtype=2 is the velocity of the disc along the stream, n=number of points in output",
         py::arg("q"), py::arg("step") = 0.01, py::arg("vtype") = 1, py::arg("n") = 60
     );
@@ -613,12 +584,12 @@ void init_roche(py::module_ &m) {
                 throw std::runtime_error("roche.pvstream: n < 2");
             }
 
-            double* vx[n];
-            double* vy[n];
-            double* x[n];
-            double* y[n];
-            double* t_arr[n];
-            double* jc_arr[n];
+            float* vx = new float[n];
+            float* vy = new float[n];
+            float* x = new float[n];
+            float* y = new float[n];
+            float* t_arr = new float[n];
+            float* jc_arr = new float[n];
 
             double TLOC = 1.0e-8;
             double RLOC = 1.0e-8;
@@ -628,7 +599,7 @@ void init_roche(py::module_ &m) {
             double rl1 = Roche::xl1(q);
 
             Subs::Vec3 r, v, rm, vm;
-            Roche::pvstrreg(q, step, vx, vy, vtype, n);
+            Roche::vstrreg(q, step, vx, vy, n, vtype);
 
             //do initial iteration
             Roche::vtrans(q, vtype, rl1, 0., 0., 0., tvx, tvy);
@@ -636,7 +607,7 @@ void init_roche(py::module_ &m) {
             y[0] = 0.;
             vx[0] = tvx;
             vy[0] = tvy;
-            t[0] = 0.;
+            t_arr[0] = 0.;
 
             //loopvar
             i = 1;
@@ -645,7 +616,7 @@ void init_roche(py::module_ &m) {
             decr = 1;
 
             Roche::strinit(q, r, v);
-            jc[0] = Roche::jacobi(q, r, v);
+            jc_arr[0] = Roche::jacobi(q, r, v);
 
             while(i < n){
                 dt = Roche::stradv(q, r, v, rnext, RLOC, 1.0e-3);
@@ -654,11 +625,11 @@ void init_roche(py::module_ &m) {
                 y[i] = r.y();
                 vx[i] = tvx;
                 vy[i] = tvy;
-                t[i] = t[i-1] + dt;
-                jc[i] = Roche::jacobi(q, r, v);
+                t_arr[i] = t_arr[i-1] + dt;
+                jc_arr[i] = Roche::jacobi(q, r, v);
                 i++;
                 if (decr == 1){
-                    rnext = rnext - rl1*step
+                    rnext = rnext - rl1*step;
                 }else{
                     rnext = rnext + rl1*step;
                 }
@@ -684,28 +655,28 @@ void init_roche(py::module_ &m) {
                     y[i] = r.y();
                     vx[i] = tvx;
                     vy[i] = tvy;
-                    t[i] = t[i-1] + dt;
-                    jc[i] = Roche::jacobi(q,r,v)
+                    t_arr[i] = t_arr[i-1] + dt;
+                    jc_arr[i] = Roche::jacobi(q,r,v);
                     i++;
                     if (decr == 1){
-                        rnext = rnext - rl1*step
+                        rnext = rnext - rl1*step;
                     }else{
                         rnext = rnext + rl1*step;
                     }
                 }
                 if (decr == 1){
-                    rnext = rnext - rl1*step
+                    rnext = rnext - rl1*step;
                 }else{
                     rnext = rnext + rl1*step;
                 }
-                r = rm
-                v = vm
-                decr = !decr
+                r = rm;
+                v = vm;
+                decr = !decr;
             }
-            return std::make_tuple(x_arr, y_arr, vx_arr, vy_arr, t_arr, jc_arr);
+            return std::make_tuple(x, y, vx, vy, t_arr, jc_arr);
         },
         "x, y, vx, vy, t, jac = pvstream(q, step=0.01, type=1, n=60), Returns arrays of positions, velocities, time, and jacobi constant along the gas stream",
-        py::arg("q") py::arg("step") = 0.01, py::arg("vtype")=1, py::arg("n")=60
+        py::arg("q"), py::arg("step") = 0.01, py::arg("vtype")=1, py::arg("n")=60
     );
 
     m.def("xl1",
@@ -714,9 +685,9 @@ void init_roche(py::module_ &m) {
             if(q <= 0.){
                 throw std::runtime_error("roche.xl1: q <= 0");
             }
-            return Roche::xl1(q)
-        }
-        "Calculate the inner Lagrangian point distance, q = M2/M1"
+            return Roche::xl1(q);
+        },
+        "Calculate the inner Lagrangian point distance, q = M2/M1",
         py::arg("q")
     );
 
@@ -726,9 +697,9 @@ void init_roche(py::module_ &m) {
             if(q <= 0.){
                 throw std::runtime_error("roche.xl2: q <= 0");
             }
-            return Roche::xl2(q)
-        }
-        "Calculate the L2 point distance, q = M2/M1"
+            return Roche::xl2(q);
+        },
+        "Calculate the L2 point distance, q = M2/M1",
         py::arg("q")
     );
 
@@ -738,9 +709,9 @@ void init_roche(py::module_ &m) {
             if(q <= 0.){
                 throw std::runtime_error("roche.xl3: q <= 0");
             }
-            return Roche::xl3(q)
-        }
-        "Calculate the L3 point distance, q = M2/M1"
+            return Roche::xl3(q);
+        },
+        "Calculate the L3 point distance, q = M2/M1",
         py::arg("q")
     );
 
@@ -751,11 +722,11 @@ void init_roche(py::module_ &m) {
                 throw std::runtime_error("roche.xl12: q <= 0");
             }
             if(spin <= 0. || 1. < spin){
-                throw std::runtime_error("roche.xl11: spin <=0 or spin > 1")
+                throw std::runtime_error("roche.xl11: spin <=0 or spin > 1");
             }
-            return Roche::xl11(q,spin)
-        }
-        "Calculate the L1 point distance if primary is asynchronous, q = M2/M1, spin = ratio of spin/orbital of primary"
+            return Roche::xl11(q,spin);
+        },
+        "Calculate the L1 point distance if primary is asynchronous, q = M2/M1, spin = ratio of spin/orbital of primary",
         py::arg("q"), py::arg("spin")
     );
 
@@ -766,11 +737,11 @@ void init_roche(py::module_ &m) {
                 throw std::runtime_error("roche.xl12: q <= 0");
             }
             if(spin <= 0. || 1. < spin){
-                throw std::runtime_error("roche.xl12: spin <=0 or spin > 1")
+                throw std::runtime_error("roche.xl12: spin <=0 or spin > 1");
             }
-            return Roche::xl12(q,spin)
-        }
-        "Calculate the L2 point distance if primary is asynchronous, q = M2/M1, spin = ratio of spin/orbital of primary"
+            return Roche::xl12(q,spin);
+        },
+        "Calculate the L2 point distance if primary is asynchronous, q = M2/M1, spin = ratio of spin/orbital of primary",
         py::arg("q"), py::arg("spin")
     );
 

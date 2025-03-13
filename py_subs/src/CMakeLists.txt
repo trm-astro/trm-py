@@ -41,9 +41,9 @@ target_include_directories(${PACKAGE_NAME}
 
 target_link_libraries(${PACKAGE_NAME} 
     PUBLIC
+        roche
         binary
         colly
-        roche
         lcurve
 )
 
