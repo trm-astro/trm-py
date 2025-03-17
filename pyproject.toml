@@ -14,8 +14,7 @@ python = "^3.11"
 astropy = "^6.1.4"
 numpy = "^1.21.4"
 
-
-[tool.poetry.dev-dependencies]
+[poetry.group.dev.dependencies]
 python = "^3.11"
 conan = "^2.9.1"
 setuptools = "^75.6.0"

@@ -21,36 +21,47 @@ find_package(pybind11 CONFIG REQUIRED)
 
 
 # Get all the targeted CPP code files
-file(GLOB PY_SUBS_SOURCES
-    src/*.cpp
-    src/*.h
+file(GLOB SUBS_SOURCES
+    src/py_subs.cpp
+    src/py_subs.h
 )
+file(GLOB ROCHE_SOURCES
+    src/py_roche.cpp
+    src/py_roche.h
+)
+
 
 message("PY_SUBS_SOURCES: ${PY_SUBS_SOURCES}")
 
 # Target the CPP code
-pybind11_add_module(py_subs ${PY_SUBS_SOURCES})
+pybind11_add_module(cpp_subs ${SUBS_SOURCES})
+target_link_libraries(cpp_subs 
+    PUBLIC
+        subs
+        pybind11::headers
+)
 
-
-target_link_libraries(py_subs 
+pybind11_add_module(cpp_roche ${ROCHE_SOURCES})
+target_link_libraries(cpp_roche 
     PUBLIC
         subs
         roche
         pybind11::headers
 )
 
-target_include_directories(py_subs
+target_include_directories(cpp_subs cpp_roche
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
 # set RPATH to PROJECT_SOURCE_DIR/install/lib and PROJECT_SOURCE_DIR/install/include
-set_target_properties(py_subs PROPERTIES
+set_target_properties(cpp_subs cpp_roche PROPERTIES
     INSTALL_RPATH "${PROJECT_SOURCE_DIR}/lib"
     BUILD_WITH_INSTALL_RPATH TRUE
     INSTALL_RPATH_USE_LINK_PATH TRUE
     BUILD_RPATH_USE_ORIGIN TRUE
 )
 
-install(TARGETS py_subs LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/)
+
+install(TARGETS cpp_subs cpp_roche LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/)

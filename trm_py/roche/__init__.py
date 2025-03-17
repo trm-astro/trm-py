@@ -50,14 +50,16 @@ RocheError -- exception class
 
 """
 
-from ._roche import *
+# from ._roche import * old cython version
+from py_subs import roche
 import math as m
 import numpy as np
-import trm.subs as subs
+
 
 def bsphases(q, iangle, rbs):
     """
-    (pbsi,pbse) = bsphases(q, iangle, rbs) -- computes bright-spot ingress and egress phases.
+    (pbsi,pbse) = bsphases(q, iangle, rbs) -- computes bright-spot ingress and
+      egress phases.
 
     q       -- mass rtaio = M2/M1
     iangle  -- orbital inclination, degrees
@@ -66,9 +68,10 @@ def bsphases(q, iangle, rbs):
     Returns ingress and egress phases of the bright-spot
     """
 
-    (x,y,vx,vy) = bspot(q, rbs)
-    (pbi,pbe)   = ineg(q,iangle,x,y,0.)
+    (x,y,vx,vy) = roche.bspot(q, rbs)
+    (pbi,pbe)   = roche.ineg(q,iangle,x,y,0.)
     return (pbi-1.,pbe-1.)
+
 
 def qirbs(deltaphi, pbi, pbe, ilo=78., ns=200):
     """
@@ -100,17 +103,17 @@ def qirbs(deltaphi, pbi, pbe, ilo=78., ns=200):
         iangle = (ilo+ihi)/2.
 
         # Compute the mass ratio and the stream path
-        q    = findq(iangle, deltaphi)
-        (x,y,vx1,vy1,vx2,vy2) = strmnx(q)
+        q    = roche.findq(iangle, deltaphi)
+        (x,y,vx1,vy1,vx2,vy2) = roche.strmnx(q)
         rmin = m.sqrt(x**2+y**2)
-        (xs,ys) = stream(q, 1.01*rmin, ns)
+        (xs,ys) = roche.stream(q, 1.01*rmin, ns)
 
         # Convert to ingress/egress phase
         pi = []
         pe = []
         for (x,y) in zip(xs,ys):
             try:
-                (bi,be) = ineg(q,iangle,x,y,0.)
+                (bi,be) = roche.ineg(q,iangle,x,y,0.)
                 pi.append(bi-1)
                 pe.append(be-1)
             except ValueError:
@@ -151,6 +154,7 @@ def qirbs(deltaphi, pbi, pbe, ilo=78., ns=200):
     rbs = m.sqrt((xs[imin]+lam*(xs[imin+1]-xs[imin]))**2+(ys[imin]+lam*(ys[imin+1]-ys[imin]))**2)
     return (q,iangle,rbs)
 
+
 def wdphases(q, iangle, r1, r2=-1, ntheta=200):
     """
     phi3, phi4 = wdphases(q, iangle, r1, ntheta=200)
@@ -183,10 +187,10 @@ def wdphases(q, iangle, r1, r2=-1, ntheta=200):
         """
         cosp = m.cos(2.*m.pi*phase)
         sinp = m.sin(2.*m.pi*phase)
-        x    = subs.Vec3(-r1*sinp,r1*cosp,0.)
+        x    = roche.Vec3(-r1*sinp,r1*cosp,0.)
         cosi = m.cos(m.radians(iangle))
         sini = m.sin(m.radians(iangle))
-        y    = subs.Vec3(-r1*cosi*cosp,-r1*cosi*sinp,r1*sini)
+        y    = roche.Vec3(-r1*cosi*cosp,-r1*cosi*sinp,r1*sini)
         return (x,y)
 
     def uneclipsed3(q, iangle, phase, r1, ffac, ntheta):
@@ -199,7 +203,7 @@ def wdphases(q, iangle, r1, r2=-1, ntheta=200):
         for i in range(ntheta):
             theta = (m.pi/2.)*i/float(ntheta-1)
             v = -x*m.cos(theta) + y*m.sin(theta)
-            if not fblink(q, iangle, phase, v, ffac, 1.e-5):
+            if not roche.fblink(q, iangle, phase, v, ffac, 1.e-5):
                 return True
         return False
 
@@ -213,7 +217,7 @@ def wdphases(q, iangle, r1, r2=-1, ntheta=200):
         for i in range(ntheta):
             theta = (m.pi/2.)*i/float(ntheta-1)
             v = x*m.cos(theta) - y*m.sin(theta)
-            if fblink(q, iangle, phase, v, ffac, 1.e-5):
+            if roche.fblink(q, iangle, phase, v, ffac, 1.e-5):
                 return True
         return False
 
@@ -244,7 +248,7 @@ def wdphases(q, iangle, r1, r2=-1, ntheta=200):
         else:
             phi3lo = phi3
 
-    return (phi3,phi4)
+    return (phi3, phi4)
 
 
 def wdradius(q, iangle, dpwd, ntheta=100, dr=1.e-5, rmax=0.1):
@@ -285,8 +289,9 @@ def jacobi(q, r, v):
     """
     f1  = 1/(1+q)
     f2  = f1*q
-    sec = subs.Vec3(1,0,0)
+    sec = roche.Vec3(1,0,0)
     return (v.sqnorm()-r.y**2-(r.x-f2)**2)/2.-f1/r.norm()-f2/(r-sec).norm()
+
 
 def rcirc(q):
     """
@@ -298,6 +303,7 @@ def rcirc(q):
     lq = np.log10(q)
     return 0.0883+lq*(-0.04858+lq*(0.11489+0.020475*lq))
 
+
 # Exception class
 class RocheError(Exception):
     """For throwing exceptions from the roche module"""
@@ -307,3 +313,12 @@ class RocheError(Exception):
     def __str__(self):
         return repr(self.value)
 
+
+# Export the functions
+__all__ = [
+    'bsphases', 'qirbs', 'wdphases', 'wdradius', 'jacobi', 'rcirc', 'face',
+    'fblink', 'findi', 'findq', 'findphi', 'ineg', 'lobe1', 'lobe2',
+    'pvstream', 'ref_sphere', 'rpot', 'rpot1', 'rpot2', 'shadow', 'stream',
+    'strmnx', 'vlobe1', 'vlobe2', 'vstream', 'xl1', 'xl2', 'xl3', 'xl11',
+    'xl12'
+    ]

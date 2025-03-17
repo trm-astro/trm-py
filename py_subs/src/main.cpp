@@ -9,16 +9,15 @@ void init_subs(py::module &);
 // void init_binary(py::module &);
 // void init_colly(py::module &);
 // void init_lcurve(py::module &);
-void init_roche(py::module &);
 
 
-PYBIND11_MODULE(py_subs, m) {
-    m.doc() = "A package with multiple features (submodules)";
+
+PYBIND11_MODULE(cpp_subs, m) {
+    m.doc() = "Subs Library";
 
     // Create the submodule `subs`
-    py::module_ cpp_subs = m.def_submodule("cpp_subs", "interface to cpp-subs");
-    init_subs(cpp_subs);
-
+    //py::module_ cpp_subs = m.def_submodule("cpp_subs", "interface to cpp-subs");
+    init_subs(m);
     // // Initialize the submodule `binary`
     // py::module_ binary = m.def_submodule("binary", "interface to cpp-binary");
     // init_binary(m);
@@ -30,9 +29,5 @@ PYBIND11_MODULE(py_subs, m) {
     // // Initialize the submodule `lcurve`
     // py::module_ lcurve = m.def_submodule("lcurve", "interface to cpp-lcurve");
     // init_lcurve(m);
-
-    // Initialize the submodule `roche`
-    py::module_ roche = m.def_submodule("roche", "interface to cpp-roche");
-    init_roche(roche);
-
 }
+

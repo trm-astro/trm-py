@@ -1,3 +1,3 @@
-from .py_subs import cpp_subs
+from py_subs import roche, cpp_subs
 
-__all__ = ['cpp_subs']
+__all__ = ['roche', 'cpp_subs']

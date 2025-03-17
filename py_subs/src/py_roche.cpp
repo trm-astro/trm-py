@@ -8,6 +8,15 @@
 // Define the alias "py" for the namespace "pybind11"
 namespace py = pybind11;
 
+void init_roche(py::module &);
+
+PYBIND11_MODULE(cpp_roche, m) {
+    m.doc() = "Roche Library";
+    // Initialize the submodule `roche`
+    //py::module_ roche = m.def_submodule("roche", "interface to cpp-roche");
+    init_roche(m);
+}
+
 void init_roche(py::module_ &m) {
     // Functions from croche.pxd
 
@@ -223,7 +232,7 @@ void init_roche(py::module_ &m) {
         py::arg("q"), py::arg("iangle"), py::arg("phi"), py::arg("r"), py::arg("ffac") = 1., py::arg("acc") = 1.e-4, py::arg("star") = 2, py::arg("spin") = 1
     );
 
-    m.def("ieng",
+    m.def("ineg",
         [](double q, double iangle, double x, double y, double z=0., double ffac=1., double delta=1.0e-7, double star=2, double spin=1){
             // do assertation checks
             if(q <= 0.){
@@ -249,7 +258,7 @@ void init_roche(py::module_ &m) {
             }
             return std::make_tuple(ingress, egress);
         },
-        "ieng(q, iangle, x, y, z=0., ffac=1., delta=1.0e-7, star=2, spin=1), computes ingress and egress phases of a point",
+        "ineg(q, iangle, x, y, z=0., ffac=1., delta=1.0e-7, star=2, spin=1), computes ingress and egress phases of a point",
         py::arg("q"), py::arg("iangle"), py::arg("x"), py::arg("y"), py::arg("z") = 0., py::arg("ffac") = 1., py::arg("delta") = 1.0e-7, py::arg("star") = 2, py::arg("spin") = 1
     );
 
