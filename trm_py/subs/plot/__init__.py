@@ -2,6 +2,8 @@
 Class to help with plots
 """
 
+# TODO: Complete refactoring of this module
+
 import trm.subs as subs
 from ppgplot import *
 

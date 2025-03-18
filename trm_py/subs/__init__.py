@@ -69,7 +69,7 @@ Sub-packages
 ============
 cpp    -- some C++ helper routines
 dvect  -- data vectors [data, errors, label]
-input  -- parameter input with default storage 
+_input  -- parameter _input with default storage 
 smtp   -- provides one function useful for handling smtp-based e-mail
 
 Withdrawn functions
@@ -81,7 +81,7 @@ medfilt -- use scipy.signal.medfilt instead
 
 from . import cpp
 from . import dvect
-from . import input
+from . import input as _input
 from . import smtp
 from . import util
 # import above from .util
@@ -144,14 +144,14 @@ from .util import DAY
 from .util import YEAR
 
 
-# Expose Fname from input (for backward compatibility)
-class Fname(input.Fname):
-    # simply inherit from input.Fname
-    # add a warning that this should be imported from input instead
-    def __init__(*args, **kwargs):
+# Expose Fname from _input (for backward compatibility)
+class Fname(_input.Fname):
+    # simply inherit from _input.Fname
+    # add a warning that this should be imported from _input instead
+    def __init__(self, *args, **kwargs):
         import warnings
         warnings.warn(
-            "Fname should be imported from subs.input instead of subs",
+            "Fname should be imported from subs._input instead of subs",
             DeprecationWarning
         )
         super().__init__(*args, **kwargs)
@@ -159,7 +159,7 @@ class Fname(input.Fname):
 
 __all__ = [
     # sub-packages
-    'cpp', 'dvect', 'input', 'smtp',
+    'cpp', 'dvect', '_input', 'smtp',
 
     # Functions
     'air2vac', 'centroid', 'convex_hull', 'date2dmy', 'd2hms', 'find_exec', 
@@ -180,7 +180,6 @@ __all__ = [
 
 
 # # Withdrawn functions
-
 def fasper(*args, **kwargs):
     # Raise an import error here
     raise ImportError("fasper no longer supported \

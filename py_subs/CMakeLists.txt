@@ -49,7 +49,13 @@ target_link_libraries(cpp_roche
         pybind11::headers
 )
 
-target_include_directories(cpp_subs cpp_roche
+target_include_directories(cpp_subs
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(cpp_roche
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
