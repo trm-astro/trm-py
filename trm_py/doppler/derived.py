@@ -4,17 +4,14 @@
 Routines that requires 2 or more of the other sub-packages
 """
 
-from __future__ import absolute_import
-
-import sys
 import numpy as np
 from scipy import linalg
 
-from .data import *
-from .map import *
-from .grid import *
+from .data import Data
+from .grid import Grid
 
-def genmat(grid, data, ntdiv):
+
+def genmat(grid: Grid, data: Data, ntdiv) -> np.ndarray:
     """Computes the matrix A when representing the Doppler image problem by A x = b
 
     Arguments::
@@ -97,17 +94,18 @@ def genmat(grid, data, ntdiv):
                         ok = np.abs(vel) < 6.
                         tflx[ok] += weight*np.exp(-vel[ok]**2/2.)
 
-                A[nrow,noff:noff+vel.size] = (tflx / data.data[nd].ferr).flat
+                A[nrow, noff:noff+vel.size] = (tflx / data.data[nd].ferr).flat
 
                 noff += vel.size
             nrow += 1
 
     # have matrices. beat into shape and return
-    A   = np.transpose(A)
+    A = np.transpose(A)
 
     return A
 
-def genvec(data):
+
+def genvec(data: Data) -> np.ndarray:
     """
     Computes the vector b when representing the Doppler image problem by A x = b
 
@@ -127,15 +125,16 @@ def genvec(data):
     b = np.empty((ndata))
 
     noff = 0
-    for nd, spectra in enumerate(data.data):
+    for _, spectra in enumerate(data.data):
         b[noff:noff+spectra.flux.size] = (spectra.flux / spectra.ferr).flat
         noff += spectra.flux.size
 
     # beat into shape and return
-    b   = np.reshape(b, (ndata,1))
+    b = np.reshape(b, (ndata, 1))
     return b
 
-def svd(grid, data, cond, ntdiv, full_output=False):
+
+def svd(grid: Grid, data: Data, cond, ntdiv, full_output=False):
     """Carries out SVD-based least-squares fit of a Grid to a Data object
     returning chi**2 values for each of several possible values of the
     parameter 'cond' which determines how many singular values are retained.
@@ -190,7 +189,7 @@ def svd(grid, data, cond, ntdiv, full_output=False):
     # carry out full SVD. Return smallest matrices possible
     # This is the slowest step of the program. scipy version
     # a tiny bit faster than numpy's
-    u, s, v = linalg.svd(A,full_matrices=False)
+    u, s, v = linalg.svd(A, full_matrices=False)
 
     # we need the transposes later
     v = np.transpose(v)
@@ -200,15 +199,16 @@ def svd(grid, data, cond, ntdiv, full_output=False):
     cs = np.asarray(cond)
     if cs.ndim == 0:
         cs = np.array([float(cond),])
-    smax  = s[0]
+    smax = s[0]
     chisq = np.empty_like(cs)
-    cred  = np.empty_like(cs)
-    sing  = np.empty_like(cs)
+    cred = np.empty_like(cs)
+    sing = np.empty_like(cs)
     ndata = data.size
     nside = grid.data.shape[0]
 
     # optional return of best-fit vectors
-    if full_output: xs = []
+    if full_output:
+        xs = []
 
     # Go through each value of the conditioning numbers
     for i, c in enumerate(cs):
@@ -228,10 +228,10 @@ def svd(grid, data, cond, ntdiv, full_output=False):
         # we now want to calculate x = v*diag(snew)*u*b
         # We calculate this as (v*diag(snew))*(u*b)
         # for speed.
-        x   = np.dot(snew*v[:,:nok],np.dot(u[:nok,:],b))
+        x = np.dot(snew*v[:, :nok], np.dot(u[:nok, :], b))
 
         # the fit to the data corresponding to x ...
-        fit = np.dot(A,x)
+        fit = np.dot(A, x)
 
         # compute chi**2 and reduced chi**2, save the grid
         # image if wanted.
@@ -239,9 +239,12 @@ def svd(grid, data, cond, ntdiv, full_output=False):
         cred[i]  = chisq[i] / (ndata - nok)
 
         if full_output:
-            xs.append(np.reshape(x,(nside,nside)))
+            xs.append(np.reshape(x, (nside,nside)))
 
     if full_output:
         return (chisq, cred, sing, s, xs)
     else:
         return (chisq, cred, sing, s)
+
+
+__all__ = ['genmat', 'genvec', 'svd']

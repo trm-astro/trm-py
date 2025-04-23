@@ -2,7 +2,7 @@
 
 import sys, argparse
 import numpy as np
-from trm import doppler
+from .. import Grid, Data, afits, svd
 
 def psearch(args=None):
     """Carries out a period search by computing chi**2 versus period, or more
@@ -48,8 +48,8 @@ def psearch(args=None):
         exit(1)
 
     # load map and data
-    grid = doppler.Grid.rfits(doppler.afits(args.grid))
-    data = doppler.Data.rfits(doppler.afits(args.data))
+    grid = Grid.rfits(afits(args.grid))
+    data = Data.rfits(afits(args.data))
 
     tbase = data.data[0].time.max() - data.data[0].time.min()
     nf = int((args.fhigh-args.flow)*tbase/args.delta)
@@ -67,7 +67,7 @@ def psearch(args=None):
 
     for f in fs:
         grid.period = 1/f
-        chisq, cred, sing, s = doppler.svd(grid, data, args.cond, args.ntdiv)
-        print(f, 1/f, ' '.join([str(c) for c in chisq]), \
+        chisq, cred, sing, s = svd(grid, data, args.cond, args.ntdiv)
+        print(f, 1/f, ' '.join([str(c) for c in chisq]),
               ' '.join([str(c) for c in cred]), ' '.join([str(sng) for sng in sing]))
         sys.stdout.flush()

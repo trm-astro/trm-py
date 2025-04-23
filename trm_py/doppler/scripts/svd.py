@@ -3,6 +3,7 @@
 import argparse
 import numpy as np
 from trm import doppler
+from .. import Grid, Data, afits, genmat
 from astropy.io import fits
 
 def svd(args=None):
@@ -32,11 +33,11 @@ def svd(args=None):
     args = parser.parse_args()
 
     # load grid and data
-    grid = doppler.Grid.rfits(doppler.afits(args.grid))
-    data = doppler.Data.rfits(doppler.afits(args.data))
+    grid = Grid.rfits(afits(args.grid))
+    data = Data.rfits(afits(args.data))
 
     # generate the matrix
-    A = doppler.genmat(grid, data, args.ntdiv)
+    A = genmat(grid, data, args.ntdiv)
 
     # Carry out full SVD, returning smallest matrices possible
     u, s, v = np.linalg.svd(A,full_matrices=False)
@@ -51,5 +52,5 @@ def svd(args=None):
     head = fits.Header()
     head['SOURCE'] = 'svd.py'
     hdu = fits.PrimaryHDU(data=v, header=head)
-    hdu.writeto(doppler.afits(args.svd))
+    hdu.writeto(afits(args.svd))
 

@@ -8,10 +8,14 @@ This code will be installable via `pip install trm-py` from PyPi (and potentiall
 
 Until further notice this is a WIP and should not be considered usable for scientific use.
 
-## CPP Subdirectorys
+## Poetry python wheel build
+
+poetry lock
+
+## CPP-Only build
 
 By necessity the CPP subdirectorys are included to build the python wheel against.
-This makes this the aconvenient place to do a full CPP build for those looking to access trm-subs and associated libs via cpp code.
+This makes this the a convenient place to do a full CPP build for those looking to access trm-subs and associated libs via cpp code.
 To build (and install) all the TRM cpp libs directly:
 
 TODO: Test this on multiplatform builds:
@@ -31,3 +35,13 @@ OPTIONAL: Install to system, else programs are in `src/build/release`
 
 7. `<sudo> cmake --install build/Release`
 8. (Optional): use `otool -l <exe or lib> | grep RPATH -A2` to ensure that the programs and libraries have linked correctly
+
+## Troubleshooting/Probable FAQs
+
+My cpp libs (conan) wont install correctly:
+
+1. `cd py_subs`
+2. `rm -r build` (potentially not required)
+3. `conan install . --build=missing`
+4. `cd ..`
+5. `poetry build`

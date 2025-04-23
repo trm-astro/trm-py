@@ -1,11 +1,15 @@
+import copy
 import argparse
 import numpy as np
-import pylab as plt
-from astropy.io import fits
-from trm import doppler
-import copy
+from .. import (
+    Map,
+    Data,
+    cpp_doppler as doppler
+)
+
 
 __all__ = ['comdat',]
+
 
 def comdat(args=None):
     """comdat computes the data corresponding to a Doppler map, with the option
@@ -30,14 +34,16 @@ def comdat(args=None):
     args = parser.parse_args()
 
     # load map and data
-    dmap  = doppler.Map.rfits(doppler.afits(args.map))
-    dtemp = doppler.Data.rfits(doppler.afits(args.dtemp))
+    dmap  = Map.rfits(doppler.afits(args.map))
+    dtemp = Data.rfits(doppler.afits(args.dtemp))
 
     flux = dtemp.data[0].flux
     ferr = dtemp.data[0].ferr
 
     # compute data
     dcopy = copy.deepcopy(dtemp)
+    
+    # This is from the C++ code
     doppler.comdat(dmap, dtemp)
 
     # optionally add noise

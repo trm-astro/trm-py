@@ -6,7 +6,8 @@ Doppler imaging in a FITS-compatible manner.
 import numpy as np
 from astropy.io import fits
 
-from .core import *
+from .core import DopplerError, VERSION, sameDims
+
 
 class Spectra(object):
     """Container for a set of spectra. This is meant to represent a homogenous
@@ -165,6 +166,7 @@ class Spectra(object):
             ', time=' + repr(self.time) + ', expose=' + repr(self.expose) + \
             ', nsub=' + repr(self.nsub) + ', fwhm=' + repr(self.fwhm) + ')'
 
+
 class Data(object):
     """This class represents all the data needed for Doppler tomogarphy.  It has
     the following attributes::
@@ -279,7 +281,8 @@ class Data(object):
             n += spectra.flux.size
         return n
 
-def chisquared(data, model):
+
+def chisquared(_data, model):
     """
     Calculates the chi**2 between two Data objects, 'data' and
     'model'. 'data' sets the uncertainties, including those which
@@ -290,11 +293,14 @@ def chisquared(data, model):
     """
     chisq = 0.
     ndata = 0
-    for mspec, dspec in zip(model.data, data.data):
+    for mspec, dspec in zip(model.data, _data.data):
         ok = dspec.ferr > 0.
         chisq += (((dspec.flux[ok]-mspec.flux[ok])/dspec.ferr[ok])**2).sum()
         ndata += len(dspec.flux[ok])
     return (chisq, ndata)
+
+
+__all__ = ['Spectra', 'Data', 'chisquared']
 
 if __name__ == '__main__':
 

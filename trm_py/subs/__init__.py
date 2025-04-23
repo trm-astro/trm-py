@@ -162,11 +162,11 @@ __all__ = [
     'cpp', 'dvect', '_input', 'smtp',
 
     # Functions
-    'air2vac', 'centroid', 'convex_hull', 'date2dmy', 'd2hms', 'find_exec', 
-    'gammq', 'hms2d', 'inpoly', 'int2month', 'linterp', 'minpoly', 'm2min', 
-    'month2int', 'mr_wd_eggleton', 'observatory', 'orbital_separation', 
-    'orbital_period', 'planck', 'pts2cont', 'rlobe_eggleton', 'sigma_reject', 
-    'sinfit', 'slitloss', 'splfit', 'str2radec', 'vac2air', 'voigt', 
+    'air2vac', 'centroid', 'convex_hull', 'date2dmy', 'd2hms', 'find_exec',
+    'gammq', 'hms2d', 'inpoly', 'int2month', 'linterp', 'minpoly', 'm2min',
+    'month2int', 'mr_wd_eggleton', 'observatory', 'orbital_separation',
+    'orbital_period', 'planck', 'pts2cont', 'rlobe_eggleton', 'sigma_reject',
+    'sinfit', 'slitloss', 'splfit', 'str2radec', 'vac2air', 'voigt',
     'zeta_wd_eggleton',
 
     # Classes

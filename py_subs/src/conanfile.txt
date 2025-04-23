@@ -2,6 +2,7 @@
 sofa/20231011
 pcre2/10.44
 llvm-openmp/18.1.8
+fftw/3.3.10
 
 [generators]
 CMakeDeps

@@ -3,7 +3,8 @@
 import argparse
 import numpy as np
 from astropy.io import fits
-from trm import doppler
+from .. import Map, Data, Grid, afits, genvec, genmat
+from .. import cpp_doppler as doppler
 
 def precover(args=None):
     """precover is a Monte Carlo routine to test period recovery via SVD. It
@@ -48,12 +49,12 @@ def precover(args=None):
 
     args = parser.parse_args()
 
-    model  = doppler.Map.rfits(doppler.afits(args.model))
+    model  = Map.rfits(afits(args.model))
     if len(model.data) != 1:
         print('precover requires just one image in the model file')
         exit(1)
 
-    data   = doppler.Data.rfits(doppler.afits(args.data))
+    data   = Data.rfits(afits(args.data))
     nmonte = args.nmonte
     flow   = args.flow
     fhigh  = args.fhigh
@@ -67,7 +68,7 @@ def precover(args=None):
 
     # create the grid
     head   = fits.Header()
-    dat    = np.empty((ngrid,ngrid))
+    dat    = np.empty((ngrid, ngrid))
     tzero  = model.tzero
     period = 1/fhigh
     quad   = 0.
@@ -75,7 +76,7 @@ def precover(args=None):
     gamma  = model.data[0].gamma
     scale  = model.data[0].scale
 
-    grid = doppler.Grid(head,dat,tzero,period,quad,vgrid,fratio,wave,gamma,scale)
+    grid = Grid(head,dat,tzero,period,quad,vgrid,fratio,wave,gamma,scale)
 
     # computations
 
@@ -110,7 +111,7 @@ def precover(args=None):
         grid.period = 1/f
 
         # generate the matrix
-        A = doppler.genmat(grid, data, ntdiv)
+        A = genmat(grid, data, ntdiv)
 
         # Carry out full SVD, returning smallest matrices possible
         u, s, v = np.linalg.svd(A,full_matrices=False)
@@ -143,7 +144,7 @@ def precover(args=None):
 
             # generate data vector and compute u*b matrix
             # product outside cond loop
-            b  = doppler.genvec(data)
+            b  = genvec(data)
             ub = np.dot(u[:mok,:],b)
 
             # Go through each value of the conditioning numbers

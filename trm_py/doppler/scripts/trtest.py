@@ -2,10 +2,10 @@
 
 import argparse
 import numpy as np
-import pylab as plt
 import copy
-from astropy.io import fits
-from trm import doppler
+from .. import cpp_doppler as doppler
+from .. import Map, Data, afits
+
 
 def trtest(args=None):
     """trtest carries out a test of tropus. The idea is to generate random inputs
@@ -35,8 +35,8 @@ def trtest(args=None):
         exit(1)
 
     # load map and data
-    dmap = doppler.Map.rfits(doppler.afits(args.map))
-    ddat = doppler.Data.rfits(doppler.afits(args.data))
+    dmap = Map.rfits(afits(args.map))
+    ddat = Data.rfits(afits(args.data))
 
     # make copies
     cmap = copy.deepcopy(dmap)

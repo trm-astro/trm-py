@@ -8,11 +8,11 @@ a routine specific to the Thai telescope
 
 import math as m
 import numpy as np
-from trm import subs
-
 from astropy import time, coordinates as coord, units as u
 from astropy.coordinates import get_sun, get_moon, EarthLocation, AltAz, SkyCoord
 from astropy.time import TimeISO
+
+from ..subs.util import Vec3, cross, dot
 
 # Longitude, latitude, height, zenith hole (deg) keyed by name
 SITES = {
@@ -63,6 +63,7 @@ SITES = {
     },
 }
 
+
 class Sdata (object):
     """
     Stores positional, ephemeris and line weight data on a star.
@@ -71,6 +72,7 @@ class Sdata (object):
         self.position = position
         self.eph = ephem
         self.lw = lweight
+
 
 class Ephemeris (object):
     """
@@ -145,6 +147,7 @@ class Ephemeris (object):
             fac  *= cycle**2
         return m.sqrt(esum)
 
+
 def load_pos_eph(fname):
     """
     Loads positional / ephemeris data from a file, returns in the form of a
@@ -202,6 +205,7 @@ def load_pos_eph(fname):
     print('Data on',len(peinfo),'stars loaded.')
     return peinfo
 
+
 class Switch (object):
     """
     Stores switch target data.
@@ -217,6 +221,7 @@ class Switch (object):
             utc += float(utv[2])/3600.
         self.utc   = utc
         self.delta = float(delta)/60.
+
 
 def load_switches(fname, peinfo):
     swinfo = []
@@ -241,6 +246,7 @@ def load_switches(fname, peinfo):
         print('No target switches loaded.')
 
     return swinfo
+
 
 class Prange(object):
     """
@@ -271,6 +277,7 @@ class Prange(object):
         lw  = int(lw)
         self.prange.append([p1, p2, col, lw, p_or_t])
 
+
 def load_ptranges(fname, peinfo):
     # Load phase / time ranges
     count = 0
@@ -300,6 +307,7 @@ def load_ptranges(fname, peinfo):
     print('Data on',len(prinfo),'phase ranges loaded.')
     return prinfo
 
+
 def tnt_alert(alt, az):
     """
     TNT horizon is complicated by the TV mast. This warns
@@ -327,20 +335,21 @@ def tnt_alert(alt, az):
     AZ   = np.radians(np.array([25.,35.5,54.5]))
     calt, salt = np.cos(ALT), np.sin(ALT)
     caz,  saz  = np.cos(AZ), np.sin(AZ)
-    v1  = subs.Vec3(saz[0]*calt[0], caz[0]*calt[0], salt[0])
-    v2  = subs.Vec3(saz[1]*calt[1], caz[1]*calt[1], salt[1])
-    v3  = subs.Vec3(saz[2]*calt[2], caz[2]*calt[2], salt[2])
+    v1  = Vec3(saz[0]*calt[0], caz[0]*calt[0], salt[0])
+    v2  = Vec3(saz[1]*calt[1], caz[1]*calt[1], salt[1])
+    v3  = Vec3(saz[2]*calt[2], caz[2]*calt[2], salt[2])
 
     # a1, a2 defined to be downward pointing axial vectors corresponding to
     # great cirles representing each extreme of the mast. Inside mast if
     # actual vector gives positive dot product with both axial vectors.
-    a1  = subs.cross(v1,v2)
-    a2  = subs.cross(v2,v3)
+    a1  = cross(v1,v2)
+    a2  = cross(v2,v3)
 
     ralt, raz = m.radians(alt), m.radians(az)
-    v = subs.Vec3(m.sin(raz)*m.cos(ralt), m.cos(raz)*m.cos(ralt), m.sin(ralt))
+    v = Vec3(m.sin(raz)*m.cos(ralt), m.cos(raz)*m.cos(ralt), m.sin(ralt))
 
-    return subs.dot(a1,v) > 0 and subs.dot(a2,v) > 0
+    return dot(a1,v) > 0 and dot(a2,v) > 0
+
 
 def load_prefixes(fname, peinfo):
     prefixes = {}
@@ -424,3 +433,7 @@ def sun_at_alt(time1, time2, site, alt, tol=0.05):
 
     return tmid
 
+
+__all__ = ['SITES', 'Sdata', 'Ephemeris', 'load_pos_eph', 'Switch',
+           'load_switches', 'Prange', 'load_ptranges', 'tnt_alert',
+           'load_prefixes', 'sun_at_alt']

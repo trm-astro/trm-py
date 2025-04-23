@@ -4,7 +4,8 @@ import argparse, os, configparser
 import numpy as np
 from scipy import ndimage
 from astropy.io import fits
-from trm import doppler
+from .. import cpp_doppler as doppler
+
 
 def makemap(args=None):
     """makemap creates Doppler maps from configuration files to provide starter

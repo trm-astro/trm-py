@@ -2,7 +2,9 @@
 
 import argparse
 import numpy as np
-from trm import doppler, pgram
+#from trm import pgram
+from .. import Data, Map, afits
+from .. import cpp_doppler as doppler
 
 def vrrec(args=None):
     usage = \
@@ -37,12 +39,12 @@ def vrrec(args=None):
 
     args = parser.parse_args()
 
-    model = doppler.Map.rfits(doppler.afits(args.model))
+    model = Map.rfits(afits(args.model))
     if len(model.data) != 1:
         print('precover requires just one image in the model file')
         exit(1)
 
-    data = doppler.Data.rfits(doppler.afits(args.data))
+    data = Data.rfits(afits(args.data))
     nmonte = args.nmonte
     flow = args.flow
     fhigh = args.fhigh

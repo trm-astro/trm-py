@@ -11,6 +11,7 @@ message("cmake lists for py_subs")
 add_subdirectory(src/cpp-subs)
 add_subdirectory(src/cpp-binary)
 add_subdirectory(src/cpp-roche)
+add_subdirectory(src/cpp-mem)
 
 # Find the module devlopment requirements
 set(PYBIND11_FINDPYTHON ON)
@@ -18,6 +19,7 @@ message("${PYTHON_SITE_PACKAGES}")
 set(pybind11_DIR "${PYTHON_SITE_PACKAGES}/pybind11/share/cmake/pybind11")
 message("${pybind11_DIR}")
 find_package(pybind11 CONFIG REQUIRED)
+find_package(FFTW3 REQUIRED)
 
 
 # Get all the targeted CPP code files
@@ -28,6 +30,12 @@ file(GLOB SUBS_SOURCES
 file(GLOB ROCHE_SOURCES
     src/py_roche.cpp
     src/py_roche.h
+)
+file(GLOB DOPPLER_SOURCES
+    src/doppler.cpp
+    src/doppler.h
+    src/py_doppler.cpp
+    src/py_doppler.h
 )
 
 
@@ -49,6 +57,14 @@ target_link_libraries(cpp_roche
         pybind11::headers
 )
 
+pybind11_add_module(cpp_doppler ${DOPPLER_SOURCES})
+target_link_libraries(cpp_doppler 
+    PUBLIC
+        FFTW3::fftw3
+        mem
+        pybind11::headers
+)
+
 target_include_directories(cpp_subs
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -61,8 +77,14 @@ target_include_directories(cpp_roche
         $<INSTALL_INTERFACE:include>
 )
 
+target_include_directories(cpp_doppler
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
 # set RPATH to PROJECT_SOURCE_DIR/install/lib and PROJECT_SOURCE_DIR/install/include
-set_target_properties(cpp_subs cpp_roche PROPERTIES
+set_target_properties(cpp_subs cpp_roche cpp_doppler PROPERTIES
     INSTALL_RPATH "${PROJECT_SOURCE_DIR}/lib"
     BUILD_WITH_INSTALL_RPATH TRUE
     INSTALL_RPATH_USE_LINK_PATH TRUE
@@ -70,4 +92,4 @@ set_target_properties(cpp_subs cpp_roche PROPERTIES
 )
 
 
-install(TARGETS cpp_subs cpp_roche LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/)
+install(TARGETS cpp_subs cpp_roche cpp_doppler LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/)

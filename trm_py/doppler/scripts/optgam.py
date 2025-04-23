@@ -3,10 +3,12 @@
 import argparse
 import numpy as np
 from scipy.optimize import minimize_scalar, bracket
-from trm import doppler
+from .. import Map, Data, afits
+from .. import cpp_doppler as doppler
 import copy
 
 __all__ = ['optgam',]
+
 
 def optgam(args=None):
     """
@@ -30,8 +32,8 @@ def optgam(args=None):
     args = parser.parse_args()
 
     # load map and data
-    dmap = doppler.Map.rfits(doppler.afits(args.map))
-    data = doppler.Data.rfits(doppler.afits(args.data))
+    dmap = Map.rfits(afits(args.map))
+    data = Data.rfits(afits(args.data))
 
     # create object for minimising.
     csq = Chisq(dmap, data)
@@ -48,7 +50,7 @@ def optgam(args=None):
     print('Optimum (global) gamma =',res.x,'km/s')
 
     # Write to a fits file
-    dmap.wfits(doppler.afits(args.output))
+    dmap.wfits(afits(args.output))
 
 class Chisq:
     """Function object returning chi**2/n given a value of gamma"""
@@ -68,6 +70,6 @@ class Chisq:
         doppler.comdat(self.dmap, dmodel)
 
         # calculate chisq
-        chisq, ndata = doppler.chisquared(self.data,dmodel)
+        chisq, ndata = doppler.chisquared(self.data, dmodel)
 
         return chisq/ndata

@@ -1,11 +1,11 @@
-#!/usr/bin/env python
-
+#! /usr/bin/env python
 import argparse
 import numpy as np
-import pylab as plt
-from astropy.io import fits
-from trm import doppler
-import copy
+from .. import (
+    Map,
+    afits,
+)
+
 
 def drlimit(args=None):
     """drlimit limits the dynamic range in an image (which otherwise can cause
@@ -25,12 +25,11 @@ def drlimit(args=None):
     args = parser.parse_args()
 
     # load map
-    imap  = doppler.Map.rfits(doppler.afits(args.inmap))
+    imap = Map.rfits(afits(args.inmap))
 
     for image in imap.data:
         fmax = image.data.max()
         image.data = np.maximum(args.llim*fmax, image.data)
 
     # write the result to a FITS file
-    imap.wfits(doppler.afits(args.outmap))
-
+    imap.wfits(afits(args.outmap))

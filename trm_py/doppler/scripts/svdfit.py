@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-from trm import doppler
+from .. import Grid, Data, afits, svd
 
 def svdfit(args=None):
     """singular value decomposition. Computes the Grid that best matches a Data,
@@ -30,13 +30,13 @@ def svdfit(args=None):
     args = parser.parse_args()
 
     # load grid and data
-    grid = doppler.Grid.rfits(doppler.afits(args.igrid))
-    data = doppler.Data.rfits(doppler.afits(args.data))
+    grid = Grid.rfits(afits(args.igrid))
+    data = Data.rfits(afits(args.data))
 
-    chisq, cred, sing, s, x = doppler.svd(grid, data, args.cond, args.ntdiv, True)
+    chisq, cred, sing, s, x = svd(grid, data, args.cond, args.ntdiv, True)
 
     grid.data = x[0]
-    grid.wfits(doppler.afits(args.ogrid))
+    grid.wfits(afits(args.ogrid))
 
     print('Chi**2        =',chisq[0])
     print('Chi**2 / Ndof =',cred[0])

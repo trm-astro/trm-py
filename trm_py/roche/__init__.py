@@ -52,7 +52,6 @@ RocheError -- exception class
 
 import math as m
 import numpy as np
-# from ._roche import * old cython version
 from py_subs.cpp_roche import (
     bspot,
     face,
@@ -79,7 +78,6 @@ from py_subs.cpp_roche import (
     vlobe1,
     vlobe2,
     vstream,
-    pvstream,
     xl1,
     xl2,
     xl3,

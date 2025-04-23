@@ -18,6 +18,7 @@ EFAC = 2.354820045
 # Speed of light in km/s
 CKMS = 299792.458
 
+
 def sameDims(arr1, arr2):
     """
     Checks that two numpy arrays have the same number of dimensions
@@ -32,6 +33,7 @@ def sameDims(arr1, arr2):
 
     return True
 
+
 def afits(fname):
     """
     Appends .fits to a filename if it does not end
@@ -44,6 +46,7 @@ def afits(fname):
     else:
         return fname + '.fits'
 
+
 def acfg(fname):
     """
     Appends .cfg to a filename if it does not end with it.
@@ -53,6 +56,7 @@ def acfg(fname):
         return fname
     else:
         return fname + '.cfg'
+
 
 def meshgrid(nxy, vxy, nz=1, dvz=0):
     """Carries out near-equivalent to numpy's meshgrid function for
@@ -111,5 +115,9 @@ def meshgrid(nxy, vxy, nz=1, dvz=0):
         ]
         return (vx,vy,vz)
 
+
 class DopplerError(Exception):
     pass
+
+
+__all__ = ['VERSION', 'EFAC', 'CKMS', 'sameDims', 'afits', 'acfg', 'meshgrid', 'DopplerError']

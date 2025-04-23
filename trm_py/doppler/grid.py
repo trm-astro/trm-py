@@ -2,11 +2,12 @@
 Defines a grid for non-regularised Doppler imaging.
 """
 
-import collections
+from collections.abc import Iterable
 import numpy as np
 from astropy.io import fits
 
-from .core import *
+from .core import DopplerError, VERSION
+
 
 class Grid(object):
     """
@@ -113,12 +114,12 @@ class Grid(object):
         if self.data.ndim != 2 or self.data.shape[0] != self.data.shape[1]:
             raise DopplerError('Grid.__init__: data is not 2D or not square')
 
-        self.tzero  = tzero
+        self.tzero = tzero
         self.period = period
-        self.quad   = quad
-        self.vgrid  = vgrid
+        self.quad = quad
+        self.vgrid = vgrid
         self.fratio = fratio
-        self.sfac   = sfac
+        self.sfac = sfac
 
         # wavelengths
         self.wave = np.asarray(wave)
@@ -150,7 +151,7 @@ class Grid(object):
                 raise DopplerError('Grid.__init__: scale and wave must' +
                                    ' match in size')
 
-        elif isinstance(scale, collections.Iterable):
+        elif isinstance(scale, Iterable):
             self.scale = np.array(scale)
             if len(self.scale) != len(self.wave):
                 raise DopplerError('Grid.__init__: scale and wave must' +
@@ -171,12 +172,12 @@ class Grid(object):
         head = hdul[0].header
 
         # Extract standard values that must be present
-        tzero  = head['TZERO']
+        tzero = head['TZERO']
         period = head['PERIOD']
-        quad   = head['QUAD']
-        vgrid  = head['VGRID']
+        quad = head['QUAD']
+        vgrid = head['VGRID']
         fratio = head['FRATIO']
-        sfac   = head['SFAC']
+        sfac = head['SFAC']
 
         # Remove from the header
         del head['TZERO']
@@ -186,12 +187,12 @@ class Grid(object):
         del head['FRATIO']
         del head['SFAC']
 
-        nwave  = head['NWAVE']
-        wave   = np.empty((nwave))
-        gamma  = np.empty((nwave))
-        scale  = np.empty((nwave)) if nwave > 1 else None
+        nwave = head['NWAVE']
+        wave = np.empty((nwave))
+        gamma = np.empty((nwave))
+        scale = np.empty((nwave)) if nwave > 1 else None
         for n in range(nwave):
-            wave[n]  = head['WAVE' + str(n+1)]
+            wave[n] = head['WAVE' + str(n+1)]
             del head['WAVE' + str(n+1)]
             gamma[n] = head['GAMM' + str(n+1)]
             del head['GAMM' + str(n+1)]
@@ -212,15 +213,15 @@ class Grid(object):
         """
         # copy the header so we can safely modify it
         head = self.head.copy()
-        head['TZERO']  = (self.tzero, 'Zeropoint of ephemeris')
+        head['TZERO'] = (self.tzero, 'Zeropoint of ephemeris')
         head['PERIOD'] = (self.period, 'Period of ephemeris')
-        head['QUAD']   = (self.quad, 'Quadratic coefficient of ephemeris')
-        head['VGRID']  = (self.vgrid, 'Gaussian spacing, km/s')
+        head['QUAD'] = (self.quad, 'Quadratic coefficient of ephemeris')
+        head['VGRID'] = (self.vgrid, 'Gaussian spacing, km/s')
         head['FRATIO'] = (self.fratio, 'ratio gaussian FWHM / spacing')
-        head['NWAVE']  = (len(self.wave), 'Number of wavelengths')
+        head['NWAVE'] = (len(self.wave), 'Number of wavelengths')
         if len(self.wave) > 1:
             n = 1
-            for w, g, s in zip(self.wave,self.gamma,self.scale):
+            for w, g, s in zip(self.wave, self.gamma, self.scale):
                 head['WAVE' + str(n)] = (w, 'Central wavelength')
                 head['GAMM' + str(n)] = (g, 'Systemic velocity, km/s')
                 head['SCAL' + str(n)] = (s, 'Scaling factor')
@@ -228,9 +229,9 @@ class Grid(object):
         else:
             head['WAVE1']  = (self.wave[0], 'Central wavelength')
             head['GAMM1'] = (self.gamma[0], 'Systemic velocity, km/s')
-        head['SFAC']   = (self.sfac, 'Global scaling factor')
+        head['SFAC'] = (self.sfac, 'Global scaling factor')
 
-        hdul  = [fits.PrimaryHDU(header=head, data=self.data),]
+        hdul = [fits.PrimaryHDU(header=head, data=self.data),]
         hdulist = fits.HDUList(hdul)
         hdulist.writeto(fname, clobber=clobber)
 
@@ -250,31 +251,32 @@ class Grid(object):
         """
         return self.data.size
 
+
 if __name__ == '__main__':
 
     # Generates a map, writes it to disc, reads it back, prints it
-    head = fits.Header()
-    head['OBJECT']   = ('IP Peg', 'Object name')
-    head['TELESCOP'] = ('William Herschel Telescope', 'Telescope name')
+    _head = fits.Header()
+    _head['OBJECT']   = ('IP Peg', 'Object name')
+    _head['TELESCOP'] = ('William Herschel Telescope', 'Telescope name')
 
     # create some data
-    data = np.random.normal(size=(10,10))
+    _data = np.random.normal(size=(10,10))
 
-    wave  = np.array((486.2, 434.0))
-    gamma = np.array((100., 100.))
-    scale = np.array((1.0, 0.5))
+    _wave  = np.array((486.2, 434.0))
+    _gamma = np.array((100., 100.))
+    _scale = np.array((1.0, 0.5))
 
-    tzero   =  2550000.
-    period  =  0.15
-    quad    =  0.0
-    vgrid   =  300.
-    fratio  =  1.0
+    _tzero   =  2550000.
+    _period  =  0.15
+    _quad    =  0.0
+    _vgrid   =  300.
+    _fratio  =  1.0
 
     # create the Grid
-    grid = Grid(head,data,tzero,period,quad,vgrid,fratio,wave,gamma,scale)
+    _grid = Grid(_head,_data,_tzero,_period,_quad,_vgrid,_fratio,_wave,_gamma,_scale)
 
     # write to fits
-    grid.wfits('test.fits')
+    _grid.wfits('test.fits')
 
     # read from fits
     g = Grid.rfits('test.fits')

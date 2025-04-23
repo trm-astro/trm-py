@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <iostream>
+#include "trm/memsys.h"
 
 namespace Mem {
 
@@ -14,12 +15,12 @@ namespace Mem {
     // file memsys.h to prevent multiple declarations.
 
     namespace Gbl {
-        extern int nj,mj,nk,mk,ka[40],kb[40],kc[40],kd[40];
-        extern int l0,l1,m0,m10,m11,m20,m21,m3;
-        extern float *st;
-        extern char pr[41];
+        int nj = 0, mj = 0, nk = 0, mk = 0;
+        int ka[40] = {0}, kb[40] = {0}, kc[40] = {0}, kd[40] = {0};
+        int l0 = 0, l1 = 0, m0 = 0, m10 = 0, m11 = 0, m20 = 0, m21 = 0, m3 = 0;
+        float *st = nullptr;
+        char pr[41] = {};
     }
-
     // Function declarations.
 
     void meinit();
@@ -223,9 +224,9 @@ namespace Mem {
 
     void memtr(const int k, const int l);
 
-    void opus(const int k, const int l);
+    //extern void opus(const int k, const int l);
 
-    void tropus(const int k, const int l);
+    //extern void tropus(const int k, const int l);
 
     void udiag();
 
@@ -1953,7 +1954,9 @@ namespace Mem {
 
         Gbl::pr[k] = 'r';
         Gbl::pr[l] = 'w';
-
+        
+        // Extern function call to user defined routine
+        // Usually defined by doppler.cc during the python build
         opus(k,l);
 
         // re-initialise to protect the user
@@ -1988,6 +1991,8 @@ namespace Mem {
         Gbl::pr[k] = 'r';
         Gbl::pr[l] = 'w';
 
+        // Extern function call to user defined routine
+        // Usually defined by doppler.cc during the python build
         tropus(k,l);
 
         // re-initialise to protect the user

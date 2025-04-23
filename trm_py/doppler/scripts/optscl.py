@@ -3,7 +3,8 @@
 import argparse
 import numpy as np
 from scipy import linalg
-from trm import doppler
+from .. import cpp_doppler as doppler
+from .. import Map, Data, afits 
 import copy
 
 __all__ = ['optscl',]
@@ -43,8 +44,8 @@ def optscl(args=None):
     args = parser.parse_args()
 
     # load map and data
-    dmap = doppler.Map.rfits(doppler.afits(args.map))
-    data = doppler.Data.rfits(doppler.afits(args.data))
+    dmap = Map.rfits(afits(args.map))
+    data = Data.rfits(afits(args.data))
 
     nscale = 0
     for image in dmap.data:
@@ -155,4 +156,4 @@ def optscl(args=None):
             image.data *= scale
 
     # Write to a fits file
-    dmap.wfits(doppler.afits(args.scaled))
+    dmap.wfits(afits(args.scaled))

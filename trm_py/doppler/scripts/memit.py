@@ -1,5 +1,6 @@
 import argparse
-from trm import doppler
+from .. import cpp_doppler as doppler
+from .. import afits, Map, Data
 
 def memit(args=None):
     """
@@ -25,11 +26,11 @@ def memit(args=None):
     args = parser.parse_args()
 
     # load map and data
-    dmap = doppler.Map.rfits(doppler.afits(args.imap))
-    data = doppler.Data.rfits(doppler.afits(args.data))
+    dmap = Map.rfits(doppler.afits(args.imap))
+    data = Data.rfits(doppler.afits(args.data))
 
     # mem iterations
     doppler.memit(dmap, data, args.niter, args.caim, args.tlim, args.rmax)
 
     # write to fits file
-    dmap.wfits(doppler.afits(args.omap))
+    dmap.wfits(afits(args.omap))

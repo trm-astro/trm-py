@@ -28,7 +28,7 @@ add_subdirectory(cpp-lcurve)
 
 # Define sources
 
-set(SOURCES test.cpp)
+set(SOURCES test.cxx)
 
 # Define the library
 add_library(${PACKAGE_NAME} SHARED ${SOURCES})

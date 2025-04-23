@@ -1,8 +1,8 @@
 import argparse, os, configparser
 import numpy as np
-import pylab as plt
 from astropy.io import fits
-from trm import doppler
+from .. import cpp_doppler as doppler
+
 
 def makedata(args=None):
     """makedata creates a blank data file that can be used as a template for

@@ -2,7 +2,7 @@
 
 import argparse
 import numpy as np
-from trm import doppler
+from .. import cpp_doppler as doppler
 
 def grid2map(args=None):
     usage = \

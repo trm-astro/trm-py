@@ -2,12 +2,13 @@
 Defines the classes needed to represent Doppler maps.
 """
 
-import collections
+from collections.abc import Iterable
 import numpy as np
 from astropy.io import fits
 from scipy.interpolate import RegularGridInterpolator
 
-from .core import *
+from .core import VERSION, DopplerError
+
 
 class Default:
     """
@@ -115,32 +116,33 @@ class Default:
 #
 # Together these allow negative region in images
 # as well as flux modulation ('modmap')
-PUNIT    =  1
-NUNIT    =  2
-PSINE    =  3
-NSINE    =  4
-PCOSINE  =  5
-NCOSINE  =  6
-PSINE2   =  7
-NSINE2   =  8
-PCOSINE2 =  9
+PUNIT = 1
+NUNIT = 2
+PSINE = 3
+NSINE = 4
+PCOSINE = 5
+NCOSINE = 6
+PSINE2 = 7
+NSINE2 = 8
+PCOSINE2 = 9
 NCOSINE2 = 10
 
 ITNAMES = {
-    PUNIT    : 'PUNIT',
-    NUNIT    : 'NUNIT',
-    PSINE    : 'PSINE',
-    NSINE    : 'NSINE',
-    PCOSINE  : 'PCOSINE',
-    NCOSINE  : 'NCOSINE',
-    PSINE2   : 'PSINE2',
-    NSINE2   : 'NSINE2',
-    PCOSINE2 : 'PCOSINE2',
-    NCOSINE2 : 'NCOSINE2'
+    PUNIT: 'PUNIT',
+    NUNIT: 'NUNIT',
+    PSINE: 'PSINE',
+    NSINE: 'NSINE',
+    PCOSINE: 'PCOSINE',
+    NCOSINE: 'NCOSINE',
+    PSINE2: 'PSINE2',
+    NSINE2: 'NSINE2',
+    PCOSINE2: 'PCOSINE2',
+    NCOSINE2: 'NCOSINE2'
 }
 
 # inverted version
 RITNAMES = {v: k for k, v in ITNAMES.items()}
+
 
 class Image:
     """This class contains all the information needed to specify a single image,
@@ -336,7 +338,7 @@ class Image:
                     ' match in size'
                 )
 
-        elif isinstance(scale, collections.Iterable):
+        elif isinstance(scale, Iterable):
             self.scale = np.array(scale)
             if len(self.scale) != len(self.wave):
                 raise DopplerError(
@@ -354,7 +356,7 @@ class Image:
 
         self.wgshdu = wgshdu
 
-    def toHDU(self, next):
+    def toHDU(self, _next):
         """
         Returns the Image as an astropy.io.fits.ImageHDU or as an
         astropy.io.fits.ImageHDU and an astropy.io.fits.BinTableHDU.
@@ -364,7 +366,7 @@ class Image:
 
         Arguments::
 
-            next : int
+            _next : int
                a number to append to the EXTNAME header extension names.
         """
 
@@ -381,7 +383,7 @@ class Image:
         if not self.wgshdu and len(self.wave) < 1000:
             # write wave, gamma, scale values to the header
             n = 1
-            for w, g, s in zip(self.wave,self.gamma,self.scale):
+            for w, g, s in zip(self.wave, self.gamma, self.scale):
                 head['WAVE' + str(n)] = (w, 'Central wavelength')
                 head['GAMMA' + str(n)] = (g, 'Systemic velocity, km/s')
                 head['SCALE' + str(n)] = (s, 'Scaling factor')
@@ -394,7 +396,7 @@ class Image:
             c2 = fits.Column(name='GAMMA', array=self.gamma, format='E')
             c3 = fits.Column(name='SCALE', array=self.scale, format='E')
             thead = fits.Header()
-            thead['EXTNAME'] = 'Table' + str(next)
+            thead['EXTNAME'] = 'Table' + str(_next)
             thdu = fits.BinTableHDU.from_columns([c1, c2, c3], thead)
             inhead = False
 
@@ -413,7 +415,7 @@ class Image:
 
         head['GROUP']   = (self.group, 'Image group number (0=no group)')
         head['PGROUP']  = (self.pgroup, 'Plot group number (0=no group)')
-        head['EXTNAME'] = 'Image' + str(next)
+        head['EXTNAME'] = 'Image' + str(_next)
 
         # define WCS
         head['WCSNAME'] = 'Velocity'
@@ -441,14 +443,14 @@ class Image:
         head['CUNIT2'] = 'km/s'
         if self.data.ndim == 3:
             head['CUNIT3'] = 'km/s'
-        ihdu = fits.ImageHDU(self.data,head)
+        ihdu = fits.ImageHDU(self.data, head)
 
         if inhead:
             # ok return with ImageHDU
             return (ihdu,)
         else:
             # ok return with ImageHDU and BinTableHDU
-            return (ihdu,thdu)
+            return (ihdu, thdu)
 
     @classmethod
     def fromHDU(cls, hdui, hdut=None):
@@ -621,6 +623,7 @@ class Image:
             ', group=' + repr(self.group) + \
             ', pgroup=' + repr(self.pgroup) + ')'
 
+
 class Map:
 
     """
@@ -754,7 +757,7 @@ class Map:
             if not isinstance(data, Image):
                 raise DopplerError(
                     'Map.__init__: data must be an Image or a list of Images'
-                )
+                ) from err
             self.data = [data,]
 
         self.tzero  = tzero
@@ -845,12 +848,13 @@ class Map:
             ', period=' + repr(self.period) + ', quad=' + repr(self.quad) + \
             ', vfine=' + repr(self.vfine) + ', sfac=' + repr(self.sfac) + ')'
 
+
 if __name__ == '__main__':
 
     # Generates a map, writes it to disc, reads it back, prints it
-    head = fits.Header()
-    head['OBJECT']   = ('IP Peg', 'Object name')
-    head['TELESCOP'] = ('William Herschel Telescope', 'Telescope name')
+    _head = fits.Header()
+    _head['OBJECT']   = ('IP Peg', 'Object name')
+    _head['TELESCOP'] = ('William Herschel Telescope', 'Telescope name')
 
     # create some images
     ny, nx = 100, 100
@@ -873,15 +877,15 @@ if __name__ == '__main__':
     def2   = Default.gauss2d(1.,200.)
     image2 = Image(data2, PUNIT, vxy, wave2, gamma2, def2)
 
-    tzero   =  2550000.
-    period  =  0.15
-    quad    =  0.0
-    vfine   =  10.
+    _tzero   =  2550000.
+    _period  =  0.15
+    _quad    =  0.0
+    _vfine   =  10.
 
     print('image2.default =',image2.default)
 
     # create the Map
-    map = Map(head,[image1,image2],tzero,period,quad,vfine)
+    map = Map(_head,[image1,image2],_tzero,_period,_quad,_vfine)
 
     # write to fits
     map.wfits('test.fits')

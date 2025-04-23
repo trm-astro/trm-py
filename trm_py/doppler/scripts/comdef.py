@@ -1,11 +1,14 @@
 #!/usr/bin/env python
-
-import argparse
-import numpy as np
-import pylab as plt
-from astropy.io import fits
-from trm import doppler
 import copy
+import argparse
+from .. import (
+    Map,
+    afits,
+    cpp_doppler as doppler,
+)
+
+__all__ = ['comdef',]
+
 
 def comdef(args=None):
     """
@@ -22,13 +25,14 @@ def comdef(args=None):
     args = parser.parse_args()
 
     # load map
-    dmap  = doppler.Map.rfits(doppler.afits(args.map))
+    dmap  = Map.rfits(afits(args.map))
 
     # copy the map to compute the entropy
     mcopy = copy.deepcopy(dmap)
 
     # compute default
+    # This is from the C++ code
     doppler.comdef(dmap)
 
     # write the result to a FITS file
-    dmap.wfits(doppler.afits(args.dout))
+    dmap.wfits(afits(args.dout))

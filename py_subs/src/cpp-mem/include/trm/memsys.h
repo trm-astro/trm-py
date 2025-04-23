@@ -1,15 +1,17 @@
 #ifndef TRM_MEMSYS_H
 #define TRM_MEMSYS_H
 
+#include <cstdlib>
+
 //! Header file for memsys
 namespace Mem {
 
   //! Namespace of global variables
   namespace Gbl {
-    int nj,mj,nk,mk,ka[40],kb[40],kc[40],kd[40];
-    int l0,l1,m0,m10,m11,m20,m21,m3;
-    float *st;
-    char pr[41];
+    extern int nj,mj,nk,mk,ka[40],kb[40],kc[40],kd[40];
+    extern int l0,l1,m0,m10,m11,m20,m21,m3;
+    extern float *st;
+    extern char pr[41];
   }
 
   //! Basic mem function
@@ -18,11 +20,11 @@ namespace Mem {
               float &c, float &test, float &cnew, float &s,
               float &rnew, float &snew, float &sumf);
 
+  //Opus and tropus are defined in doppler.cpp and used when compiling the python.
   //! Standard opus declaration
-  void opus(const int k, const int l);
-
+  extern void opus(const int k, const int l);
   //! Standard tropus declaration
-  void tropus(const int k, const int l);
+  extern void tropus(const int k, const int l);
 
   //! Sets up the memory
   void memcore(size_t mxbuf, size_t nmod, size_t ndat);

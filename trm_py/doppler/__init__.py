@@ -7,12 +7,17 @@ This is an implementation of Doppler tomography in Python. It
 allows flexible configuration of both images and input data.
 """
 
-from .core  import *
-from .data  import *
-from .map   import *
-from .grid  import *
-from ._doppler import *
-from .derived import *
+from py_subs import cpp_doppler
+
+from .core import afits, acfg
+from .data import Spectra, Data
+from .map import Image, Map
+from .grid import Grid
+from .derived import genmat, genvec, svd
+
+# scripts is a sub-package
 from . import scripts
 
-__all__ = ['Image', 'Map', 'Spectra', 'Data', 'Grid']
+__all__ = ['Image', 'Map', 'Spectra', 'Data', 'Grid',
+           'genmat', 'genvec', 'svd', 'afits', 'acfg',
+           'cpp_doppler']

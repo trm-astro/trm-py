@@ -2,7 +2,8 @@
 
 import argparse
 import numpy as np
-from trm import doppler, molly
+#from trm import molly # This is from colly
+from .. import Spectra, Data
 from astropy.io import fits
 
 def mol2dopp(args=None):
@@ -18,7 +19,7 @@ def mol2dopp(args=None):
     # positional
     parser.add_argument('molly', help='name of the molly input file')
     parser.add_argument(
-        'fwhm',  type=float,help='FWHM resolution of data in km/s'
+        'fwhm',  type=float, help='FWHM resolution of data in km/s'
     )
     parser.add_argument('dout',  help='data output file')
 
@@ -64,7 +65,7 @@ def mol2dopp(args=None):
     # allow for exposure smearing.
     time   = np.empty((len(mspec),))
     expose = np.empty((len(mspec),))
-    nsub   = args.nsub*np.ones_like(expose,dtype=int)
+    nsub   = args.nsub*np.ones_like(expose, dtype=int)
 
     # wind through the spectra, loading the molly spectra
     # into the 2D arrays and reading the mid-exposure times
@@ -86,13 +87,13 @@ def mol2dopp(args=None):
  
     # Create a "Spectra" object [this is where you could cope with
     # heterogenous data by creating more than one such object]
-    spectra = doppler.Spectra(flux, ferr, wave, time, expose, nsub, args.fwhm)
+    spectra = Spectra(flux, ferr, wave, time, expose, nsub, args.fwhm)
 
     # Blank header
     head = fits.Header()
 
     # Create a "Data" object
-    data = doppler.Data(head, spectra)
+    data = Data(head, spectra)
 
     # Write out the Data object for use by the rest of the routines.
     data.wfits(args.dout)

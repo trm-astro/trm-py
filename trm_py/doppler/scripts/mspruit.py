@@ -3,7 +3,9 @@
 import argparse
 from astropy.io import fits
 import numpy as np
-from trm import doppler
+from .. import Image, afits, Map
+from .. import cpp_doppler as doppler
+
 
 def mspruit(args=None):
     """Converts a Doppler map produced by Henk Spruit's Doppler tomography
@@ -66,16 +68,16 @@ def mspruit(args=None):
         while len(mp) < nv*nv:
             line = fin.readline()
             mp += [float(f) for f in line.split()]
-        mp = np.reshape(np.array(mp),(nv,nv))
+        mp = np.reshape(np.array(mp), (nv, nv))
 
         vxy = 2*va/1.e5/(nv-1)
 
     # OK have map, prepare for output
-    head  = fits.Header()
-    head['ORIGIN']= "Henk Spruit's doppler tom package"
-    image = doppler.Image(
+    head = fits.Header()
+    head['ORIGIN'] = "Henk Spruit's doppler tom package"
+    image = Image(
         mp, doppler.PUNIT, vxy, w0, 0., doppler.Default.gauss2d(1., args.fwhm)
     )
-    dmap = doppler.Map(head, image, args.tzero, args.period, 0., vxy)
-    dmap.wfits(doppler.afits(args.map))
+    dmap = Map(head, image, args.tzero, args.period, 0., vxy)
+    dmap.wfits(afits(args.map))
 

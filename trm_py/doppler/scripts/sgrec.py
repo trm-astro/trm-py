@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-
-import matplotlib.pyplot as plt
 import argparse
 import numpy as np
-from trm import doppler, pgram, subs
+from .. import Map, Data, afits, rfits, 
+# from trm import pgram # what is this?
+from .. import cpp_doppler as doppler
+from py_subs import subs
 
 def sgrec(args=None):
     usage = \

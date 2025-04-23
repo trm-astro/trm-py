@@ -3,7 +3,8 @@
 import argparse, os, ConfigParser
 import numpy as np
 from astropy.io import fits
-from trm import doppler
+from .. import cpp_doppler as doppler
+
 
 def makegrid(args=None):
     """makegrid creates Doppler grids from configuration files to provide starter

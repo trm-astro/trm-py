@@ -1054,17 +1054,24 @@ class Vec3(object):
                     self.z*other.x-self.x*other.z,
                     self.x*other.y-self.y*other.x)
 
-def dot(a, b):
+
+def dot(a: Vec3, b: Vec3) -> float:
     """
     Computes the scalar or dot product of two 3-vectors
     """
-    return a.x*b.x+a.y*b.y+a.z*b.z
+    assert isinstance(a, Vec3) and isinstance(b, Vec3),\
+        "Arguments must be of type Vec3"
+    return a.dot(b)
 
-def cross(a, b):
+
+def cross(a: Vec3, b: Vec3) -> Vec3:
     """
     Computes the vector or cross product of two 3-vectors
     """
-    return Vec3(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x)
+    assert isinstance(a, Vec3) and isinstance(b, Vec3),\
+        "Arguments must be of type Vec3"
+    return a.cross(b)
+
 
 def mr_wd_eggleton(mass):
     """
@@ -1082,6 +1089,7 @@ def mr_wd_eggleton(mass):
     fac2 = 0.00057/mass;
     return 0.0114*np.sqrt(1./fac1-fac1)*np.power(1.+3.5*np.power(fac2,2./3.)+fac2,-2./3.)
 
+
 def orbital_separation(m1, m2, period):
     """
     Returns orbital semi-major axis in solar radii given masses in solar masses
@@ -1091,6 +1099,7 @@ def orbital_separation(m1, m2, period):
 
     return (G*MSUN*(m1+m2)*(DAY*period/(2.*m.pi))**2)**(1./3.)/RSUN
 
+
 def orbital_period(m1, m2, a):
     """
     Returns orbital period in days given masses in solar masses
@@ -1099,6 +1108,7 @@ def orbital_period(m1, m2, a):
 
     return 2.*m.pi/m.sqrt(G*MSUN*(m1+m2)/m.pow(RSUN*a,3))/DAY
 
+
 def jdotgr(m1, m2, a):
     """
     Returns Jdot/J due to GR. m1, m2, a in solar units, result
@@ -1106,11 +1116,13 @@ def jdotgr(m1, m2, a):
     """
     return -32./5.*(G*MSUN/C/RSUN)**3/C**2/RSUN*m1*m2*(m1+m2)/a**4
 
+
 def jorb(m1, m2, a):
     """
     Returns orbital angular momentum, (SI), given m1, m2, a in solar units
     """
     return MSUN*m1*m2*m.sqrt(G*MSUN*RSUN*a/(m1+m2))
+
 
 def jdotrvj(m2, r2, gamma, porb):
     """
@@ -1119,12 +1131,14 @@ def jdotrvj(m2, r2, gamma, porb):
     """
     return -3.8e-26*m2*MSUN*RSUN**4*r2**gamma*(2.*m.pi/porb/DAY)**3
 
+
 def rlobe_eggleton(q):
     """
     Returns scaled Roche lobe radius of star 2 according to Eggleton's (1983) formula given
     q = M2/M1. Works for scalar or array values.
     """
     return 0.49*q**(2./3.)/(0.6*q**(2./3.)+np.log(1.+ q**(1./3.)))
+
 
 def date2dmy(dstring):
     """Returns (year,month,day) as numbers given input dates such as '11 Apr 2004' or 'Apr 11 2004'"""
@@ -1145,13 +1159,13 @@ def date2dmy(dstring):
             month = month2int(m.group(1))
         else:
             raise SubsError('Date = ' + dstring + ' not in a recognised format.')
-    return (year,month,day)
+    return (year, month, day)
+
 
 def month2int(name):
     """
-    i = month2int(name) -- returns integer 1 to 12 given first three characters of a month name, case insensitively
-
-    returns 0 if 
+    i = month2int(name) -- returns integer 1 to 12 given first three
+    characters of a month name, case insensitively
     """
 
     names = {'jan' : 1, 'feb' : 2, 'mar' : 3, 'apr' : 4, 'may' : 5, 'jun' : 6, 'jul' : 7, 'aug' : 8, 'sep' : 9, 'oct' : 10, 'nov' : 11, 'dec' : 12}
@@ -1162,12 +1176,14 @@ def month2int(name):
         raise SubsError('subs.month2int: month = ' + str(lname) + ' not recognised')
     return month
 
+
 def int2month(month):
     """name = int2month(month) -- returns 3 letter month name given integer 1 to 12"""
     names = ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec')
     if month < 1 or month > 12:
         raise SubsError('subs.int2month: month = ' + str(month) + ' out of range 1 to 12')
     return names[month-1]
+
 
 def inpoly(poly, x, y):
     """Determines whether a point (x,y) is inside a polygon defined by
@@ -1176,7 +1192,7 @@ def inpoly(poly, x, y):
     first y coordinate, poly[1,0] is the second x coordinate etc. It
     returns True if the point is inside the poly.
 
-    See this web page for lengthy description of the method which I 
+    See this web page for lengthy description of the method which I
     translated from the short piece of C-code listed there:
 
     http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
@@ -1187,6 +1203,7 @@ def inpoly(poly, x, y):
 
     See also: minpoly
     """
+    #TODO: Likely this is better bound into some C for speed, or use shapley
 
     outside = True
     j = poly.shape[0] - 1
@@ -1196,6 +1213,7 @@ def inpoly(poly, x, y):
             outside = not outside
         j = i
     return not outside
+
 
 def minpoly(poly, x, y):
     """Determines whether points in numpy arrays (x,y) are inside a
@@ -1216,6 +1234,8 @@ def minpoly(poly, x, y):
 
     See also: inpoly
     """
+    #TODO: Likely this is better bound into some C for speed, or use shapley
+
 
     outside = np.ones_like(x,dtype=bool)
     j = poly.shape[0] - 1
@@ -1225,6 +1245,7 @@ def minpoly(poly, x, y):
         outside[switch] = ~outside[switch]
         j = i
     return ~outside
+
 
 def sigma_reject(data, thresh, onebyone):
     """
@@ -1471,6 +1492,7 @@ def scargle(x, y, e, f1, f2, nf):
         szero += alpha*szero+beta*tmp
         
     return (f,p)
+
 
 def convex_hull(points):
     """
