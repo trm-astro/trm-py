@@ -62,11 +62,11 @@ if(NOT DEFINED PLPLOT_FOUND)
     include("${CMAKE_COMMON}/plplot_install.cmake")
 endif()
 
-find_package(SUBS REQUIRED CONFIG)
+#find_package(SUBS REQUIRED CONFIG)
 
-if (NOT SUBS_FOUND)
-    message(FATAL_ERROR "SUBS library not found.")
-endif()
+# if (NOT SUBS_FOUND)
+#     message(FATAL_ERROR "SUBS library not found.")
+# endif()
 
 target_include_directories(${PACKAGE_NAME}
     PUBLIC 

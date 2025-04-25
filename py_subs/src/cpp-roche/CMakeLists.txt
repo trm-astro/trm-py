@@ -82,11 +82,11 @@ if(NOT DEFINED PLPLOT_FOUND)
     include("${CMAKE_COMMON}/plplot_install.cmake")
 endif()
 
-find_package(BINARY REQUIRED)
+# find_package(BINARY REQUIRED)
 
-if (NOT BINARY_FOUND)
-    message(FATAL_ERROR "BINARY library not found.")
-endif()
+# if (NOT BINARY_FOUND)
+#     message(FATAL_ERROR "BINARY library not found.")
+# endif()
 
 target_include_directories(${PACKAGE_NAME}
     PUBLIC 
