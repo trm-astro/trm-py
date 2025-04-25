@@ -40,8 +40,29 @@ OPTIONAL: Install to system, else programs are in `src/build/release`
 
 My cpp libs (conan) wont install correctly:
 
-1. `cd py_subs`
-2. `rm -r build` (potentially not required)
-3. `conan install . --build=missing`
-4. `cd ..`
-5. `poetry build`
+> 1. `cd py_subs`
+> 2. `rm -r build` (potentially not required)
+> 3. `conan install . --build=missing`
+> 4. `cd ..`
+> 5. `poetry build`
+
+Conan is complaining about profiles
+
+> 1. `which conan` ensure this finds conan (and where you expect it to be)
+> 2. `conan profile detect` Make sure the output matches your system configuration
+
+Conan wont find fttw3
+
+> This seems to be a (temporary?) issue with the new conan2 repo not having the build for mac
+> We can install from the old remote by adding it
+>
+> 1. `conan remote add old-conan https://center.conan.io`
+> 2. `cd py_subs/src`
+> 3. `conan install . -r old-conan --build=missing`
+>
+> Now its built and cached you should have no issues
+
+CMake 3.5 issues
+
+> The latest CMake >4.00 deprecated anything with cmake_minimum_required(3.5)
+> Install CMake 3.31

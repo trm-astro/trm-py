@@ -1310,6 +1310,8 @@ void Mem::tropus(const int k, const int j){
        Dopp::time, Dopp::expose, Dopp::nsub, Dopp::fwhm);
 }
 
+
+
 /* npix_data -- returns with the number of pixels needed to allocate memory
  * for the images in a Doppler Map.
  *
@@ -2933,6 +2935,7 @@ doppler_memit(PyObject *self, PyObject *args, PyObject *kwords)
     delete[] Mem::Gbl::st;
     Py_RETURN_NONE;
 }
+
 
 // The methods
 static PyMethodDef DopplerMethods[] = {
