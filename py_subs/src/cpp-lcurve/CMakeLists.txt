@@ -55,8 +55,8 @@ if(NOT DEFINED PLPLOT_FOUND)
     include("${CMAKE_COMMON}/plplot_install.cmake")
 endif()
 
-find_package(colly REQUIRED)
-find_package(roche REQUIRED)
+# find_package(colly REQUIRED)
+# find_package(roche REQUIRED)
 find_package(OpenMP REQUIRED)
 
 if (NOT colly_FOUND)

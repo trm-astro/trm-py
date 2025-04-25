@@ -11,3 +11,4 @@ dist/
 *.whl
 py_subs/lib/
 trm_py/__pycache__/
+.vscode/
