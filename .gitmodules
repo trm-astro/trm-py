@@ -16,3 +16,7 @@
 [submodule "src/cpp-binary"]
 	path = src/cpp-binary
 	url = git@github.com:trm-astro/cpp-binary.git
+
+[submodule "src/cpp-subs"]
+	path = src/cpp-subs
+	url = git@github.com:trm-astro/cpp-subs.git

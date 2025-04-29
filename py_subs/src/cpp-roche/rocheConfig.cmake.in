@@ -1,9 +1,0 @@
-@PACKAGE_INIT@
-
-include(CMakeFindDependencyMacro)
-
-# Import targets from the installed export set
-include("${CMAKE_CURRENT_LIST_DIR}/rocheTargets.cmake")
-
-# Set any additional variables if needed, such as version or paths
-set(roche_VERSION "@PROJECT_VERSION@")
