@@ -14,3 +14,4 @@ py_subs/lib/*.dylib
 py_subs/lib/cmake/
 trm_py/__pycache__/
 .vscode/
+poetry.lock
