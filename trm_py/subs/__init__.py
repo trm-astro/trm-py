@@ -83,65 +83,63 @@ from . import cpp
 from . import dvect
 from . import input as _input
 from . import smtp
-from . import util
-# import above from .util
 
-# Functions
-from .util import air2vac
-from .util import centroid
-from .util import convex_hull
-from .util import date2dmy
-from .util import d2hms
-from .util import find_exec
-from .util import gammq
-from .util import hms2d
-from .util import inpoly
-from .util import int2month
-from .util import linterp
-from .util import minpoly
-from .util import m2min
-from .util import month2int
-from .util import mr_wd_eggleton
-from .util import observatory
-from .util import orbital_separation
-from .util import orbital_period
-from .util import planck
-from .util import pts2cont
-from .util import rlobe_eggleton
-from .util import sigma_reject
-from .util import sinfit
-from .util import slitloss
-from .util import splfit
-from .util import str2radec
-from .util import vac2air
-from .util import voigt
-from .util import zeta_wd_eggleton
+from .util import (
+    air2vac,
+    centroid,
+    convex_hull,
+    date2dmy,
+    d2hms,
+    find_exec,
+    gammq,
+    hms2d,
+    inpoly,
+    int2month,
+    linterp,
+    minpoly,
+    m2min,
+    month2int,
+    mr_wd_eggleton,
+    observatory,
+    orbital_separation,
+    orbital_period,
+    planck,
+    pts2cont,
+    rlobe_eggleton,
+    sigma_reject,
+    sinfit,
+    slitloss,
+    splfit,
+    str2radec,
+    vac2air,
+    voigt,
+    zeta_wd_eggleton,
+    iStr,
+    Odict,
+    SubsError,
+    Poly,
+    Vec3,
+)
 
-# Classes
-from .util import iStr
-from .util import Odict
-from .util import SubsError
-from .util import Poly
-from .util import Vec3
-
-# Data
-from .util import ME
-from .util import MP
-from .util import E
-from .util import H
-from .util import C
-from .util import K
-from .util import SIGMA
-from .util import RSUN
-from .util import PARSEC
-from .util import AU
-from .util import G
-from .util import MSUN
-from .util import GMSUN
-from .util import KGAUSS
-from .util import MJ
-from .util import DAY
-from .util import YEAR
+from .util import (
+    ME,
+    MP,
+    E,
+    H,
+    C,
+    K,
+    SIGMA,
+    RSUN,
+    PARSEC,
+    AU,
+    G,
+    MSUN,
+    GMSUN,
+    KGAUSS,
+    MJ,
+    DAY,
+    YEAR
+)
 
 
 # Expose Fname from _input (for backward compatibility)

@@ -9,6 +9,8 @@ tests/
 *.so
 dist/
 *.whl
-py_subs/lib/
+py_subs/lib/*.so
+py_subs/lib/*.dylib
+py_subs/lib/cmake/
 trm_py/__pycache__/
 .vscode/

@@ -39,6 +39,7 @@ def voigt(a, x, eps=1.e-8):
     """
     return cpp_subs.voigt(a, x)
 
+
 def gammq(a, x):
     """gammq(a, x) -- returns the incomplete gamma function
     Inputs
@@ -88,6 +89,7 @@ def planck(wave, temp, units='FLAM'):
     else:
         return flux*np.exp(-efac)
 
+
 def slitloss(width, seeing):
     """
     Computes fraction of gaussian seeing profile getting through a slit
@@ -107,6 +109,7 @@ def slitloss(width, seeing):
 
     (sloss,err) = scipy.integrate.quad(sfunc, -width/2., width/2., args=(seeing))
     return sloss
+
 
 def splfit(x, y, ye, nspline, thresh, slow=True):
     """
@@ -167,6 +170,7 @@ def splfit(x, y, ye, nspline, thresh, slow=True):
 
     nrej = len(x) - len(x[ok])
     return (sfit,nrej,rms,ok)
+
 
 def sinfit(x, y, ye, period, pfree=False, mask=None):
     """
@@ -234,6 +238,7 @@ def sinfit(x, y, ye, period, pfree=False, mask=None):
 
         return (sfit,float(c[0]),float(c[1]),float(c[2]))
 
+
 def vac2air(wvac):
     """wair = vac2air(wvac): convert vacuum wavelengths (in Angstroms) to air wavelengths
 
@@ -242,6 +247,7 @@ def vac2air(wvac):
     where it appears in a less convenient form.
     """
     return wvac/(1.0002735182 + (131.4182+2.76249e8/wvac**2)/wvac**2)
+
 
 def air2vac(wair):
     """wvac = air2vac(wair): convert air wavelengths (in Angstroms) to vacuum wavelengths
@@ -252,6 +258,7 @@ def air2vac(wair):
     sigmasq = (1.e4/wair)**2
 
     return wair*(1.000064328 + 2.94981e-2/(146.-sigmasq) + 2.5540e-4/(41.-sigmasq))
+
 
 def m2min(mf, m1):
     """
@@ -268,6 +275,7 @@ def m2min(mf, m1):
     for i in range(3):
         m2 -= (m2**3-mf*(m1+m2)**2)/(3*m2**2-2*mf*(m1+m2))
     return m2
+
 
 def linterp(x, y, xnew):
 
@@ -317,6 +325,7 @@ def linterp(x, y, xnew):
             return y[-1]
         else:
             return ((xnew - x[iarr[0]-1])*y[iarr[0]]+(x[iarr[0]]-xnew)*y[iarr[0]-1])/(x[iarr[0]]-x[iarr[0]-1])
+
 
 def centroid(xpos, fwhm, y, emission=True, e=None):
     """(xcen,{xerr}) = centroid(xpos, fwhm, y, e=None) -- computes weighted centroid of a feature in a 1D array.
@@ -436,6 +445,7 @@ def centroid(xpos, fwhm, y, emission=True, e=None):
     else:
         return xm
 
+
 class iStr(str):
     """
     Case insensitive strings class.
@@ -500,16 +510,17 @@ class iStr(str):
     def startswith(self, other, *args):
         return str.startswith(self.__lowerCaseMe, other.lower(), *args)
 
+
 class Odict(dict):
     """
     A dictionary which stores a key order which it uses when printing
     """
 
-    ninset  = 0
-    nincr   = 5
+    ninset = 0
+    nincr = 5
     nlength = 20
 
-    def __init__(self, dct = None):
+    def __init__(self, dct=None):
         if dct == None:
             self._keys = []
             dict.__init__(self, {})
@@ -569,7 +580,7 @@ class Odict(dict):
 
         return (key, val)
 
-    def setdefault(self, key, failobj = None):
+    def setdefault(self, key, failobj=None):
         if key not in self._keys: self._keys.append(key)
         return dict.setdefault(self, key, failobj)
 
@@ -582,6 +593,7 @@ class Odict(dict):
 
     def iteritems(self):
         return _odict_iteritem(self)
+
 
 class _odict_iteritem:
     """Iterator class for Odict"""
@@ -600,6 +612,7 @@ class _odict_iteritem:
         val = self.odct[key]
         self.last += 1
         return (key,val)
+
 
 def str2radec(position, crude=False):
     """
@@ -734,6 +747,7 @@ def str2radec(position, crude=False):
 
     raise SubsError('trm.subs.str2radec: could not interpret "' + position + '" as astronomical coordinates')
 
+
 def observatory(telescope=None):
     """
     (tel,obs,longitude,latitude,height) = observatory(telescope=None)
@@ -809,6 +823,7 @@ def observatory(telescope=None):
 
     return (tel,obs,longitude,latitude,float(height))
 
+
 def d2hms(hour, precision=2, sep=':', dp=3, sign=False, nearest=False):
     """hms = d2hms(hour, precision=2) -- returns HH MM SS.SS time string from a decimal hour
 
@@ -847,6 +862,7 @@ def d2hms(hour, precision=2, sep=':', dp=3, sign=False, nearest=False):
             st = '+' + st
     return st
 
+
 def hms2d(utc):
     """hour = hms2d(utc) -- returns decimal hour from and HH MM SS.SS time string. Can also cope
     with initial + or - sign.
@@ -867,6 +883,7 @@ def hms2d(utc):
     s = float(utc[6+off:])
     return sign*(h + m/60. + s/3600.)
 
+
 # Exception class
 class SubsError(Exception):
     """For throwing exceptions from the subs module"""
@@ -875,6 +892,7 @@ class SubsError(Exception):
             
     def __str__(self):
         return repr(self.value)
+
 
 class Poly(np.ndarray):
     """
@@ -917,6 +935,7 @@ array(data=
 
     def __str__(self):
         return 'coeffs=\n%s\nx0=%f, xscale=%f' % (np.ndarray(self).__str__(), self.x0, self.xscale)
+
 
 class Vec3(object):
     """

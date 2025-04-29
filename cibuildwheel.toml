@@ -1,0 +1,11 @@
+[tool.cibuildwheel]
+output-dir = "dist"
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.linux]
+manylinux-images = ["manylinux2014"]
+
+[tool.cibuildwheel.windows]
+archs = ["x86_64", "ARM64"]

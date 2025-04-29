@@ -92,4 +92,4 @@ set_target_properties(cpp_subs cpp_roche cpp_doppler PROPERTIES
 )
 
 
-install(TARGETS cpp_subs cpp_roche cpp_doppler LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/)
+install(TARGETS cpp_subs cpp_roche cpp_doppler LIBRARY DESTINATION ${CMAKE_SOURCE_DIR})
