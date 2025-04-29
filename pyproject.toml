@@ -8,58 +8,31 @@ authors = [
 readme = "README.md"
 packages = [
 { include = "trm_py", from = "." },
-{ include = "py_subs", from = "." },
 ]
-
-[tool.poetry]
-include = [
-    { path = "py_subs/*.so", format=["sdist", "wheel"]},
-    { path = "py_subs/lib/*.dylib", format=["sdist", "wheel"]},
-    { path = "py_subs/lib/cmake/**/*.cmake", format=["sdist"]}
-]
-
-[tool.poetry.dependencies]
-python = ">3.10,<4.0"
-astropy = "^6.1.4"
-numpy = "^1.21.4"
-scipy = "^1.7.3"
-pyvista = "^0.45.0"
-conan = "^2.15.1"
-cibuildwheel = "^2.23.3"
-
-[poetry.group.dev.dependencies]
-python = ">3.10,<4.0"
-conan = "^2.9.1"
-setuptools = "^75.6.0"
-
-[tool.poetry.build]
-script = "py_subs/build.py"
-
-[tool.poetry.scripts]
-comdat = "trm_py.doppler.scripts.comdat:comdat"
-comdef = "trm_py.doppler.scripts.comdef:comdef"
-drlimit = "trm_py.doppler.scripts.drlimit:drlimit"
-makedata = "trm_py.doppler.scripts.makedata:makedata"
-makegrid = "trm_py.doppler.scripts.makegrid:makegrid"
-makemap = "trm_py.doppler.scripts.makemap:makemap"
-memit = "trm_py.doppler.scripts.memit:memit"
-mol2dopp = "trm_py.doppler.scripts.mol2dopp:mol2dopp"
-mspruit = "trm_py.doppler.scripts.mspruit:mspruit"
-optgam = "trm_py.doppler.scripts.optgam:optgam"
-optscl = "trm_py.doppler.scripts.optscl:optscl"
-precover = "trm_py.doppler.scripts.precover:precover"
-psearch = "trm_py.doppler.scripts.psearch:psearch"
-svdfit = "trm_py.doppler.scripts.svdfit:svdfit"
-svd = "trm_py.doppler.scripts.svdfit:svd"
-trtest = "trm_py.doppler.scripts.trtest:trtest"
-vrend = "trm_py.doppler.scripts.vrend:vrend"
 
 [build-system]
 requires = [
-"poetry-core",
-"setuptools>=75.6.0",
-"pybind11>=2.13.0",
-"conan>=2.9.1",
-"cibuildwheel>=2.14.1",
+    "scikit-build-core>=0.5.0",
+    "setuptools>=75.6.0",
+    "pybind11>=2.13.0",
+    "conan>=2.9.1"
 ]
-build-backend = "poetry.core.masonry.api"
+build-backend = "scikit_build_core.build.api"
+
+[tool.scikit-build]
+generator = "Ninja"  # Optional: Use Ninja for faster builds
+source-dir = "src"
+build-dir = "build"
+
+[tool.scikit-build.cmake]
+arguments = [
+    "-DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake",
+    "-DPLPLOT_BUILD_TYPE=4",
+    "-DPYTHON_SITE_PACKAGES={python_site_dir}"
+]
+
+[tool.scikit-build.command-hooks]
+pre-build = [
+    "conan install . -b missing",
+    "conan profile detect --force"
+]
