@@ -3,17 +3,31 @@
 # Set the minimum version of CMake that can be used
 cmake_minimum_required(VERSION 3.27)
 
+message("PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
+message("CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
+message("CMAKE_TOOlCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
+
 project(py-subs)
-message("cmake lists for py_subs")
+message("cmake lists for trm_py")
+
+# Build PLPLOT if not already built
+# if(NOT DEFINED CMAKE_COMMON)
+#     set(CMAKE_COMMON ./cmake_common)
+# endif()
+# if(NOT DEFINED PLPLOT_FOUND)
+#     include("${CMAKE_COMMON}/plplot_install.cmake")
+# endif()
 
 # These must be in order to build the subdirectories
 # roche -> binary -> subs
+#add_subdirectory(src/plplot)
 add_subdirectory(src/cpp-subs)
 add_subdirectory(src/cpp-binary)
 add_subdirectory(src/cpp-roche)
 add_subdirectory(src/cpp-mem)
 
-# Find the module devlopment requirements
+
+# Find the module development requirements
 set(PYBIND11_FINDPYTHON ON)
 message("${PYTHON_SITE_PACKAGES}")
 set(pybind11_DIR "${PYTHON_SITE_PACKAGES}/pybind11/share/cmake/pybind11")
@@ -38,58 +52,62 @@ file(GLOB DOPPLER_SOURCES
     src/py_doppler.h
 )
 
-
-message("PY_SUBS_SOURCES: ${PY_SUBS_SOURCES}")
-
 # Target the CPP code
-pybind11_add_module(cpp_subs ${SUBS_SOURCES})
-target_link_libraries(cpp_subs 
+pybind11_add_module(_cpp_subs ${SUBS_SOURCES})
+target_link_libraries(_cpp_subs 
     PUBLIC
         subs
         pybind11::headers
 )
 
-pybind11_add_module(cpp_roche ${ROCHE_SOURCES})
-target_link_libraries(cpp_roche 
+pybind11_add_module(_cpp_roche ${ROCHE_SOURCES})
+target_link_libraries(_cpp_roche 
     PUBLIC
         subs
         roche
         pybind11::headers
 )
 
-pybind11_add_module(cpp_doppler ${DOPPLER_SOURCES})
-target_link_libraries(cpp_doppler 
+pybind11_add_module(_cpp_doppler ${DOPPLER_SOURCES})
+target_link_libraries(_cpp_doppler 
     PUBLIC
         FFTW3::fftw3
         mem
         pybind11::headers
 )
 
-target_include_directories(cpp_subs
+target_include_directories(_cpp_subs
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(cpp_roche
+target_include_directories(_cpp_roche
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(cpp_doppler
+target_include_directories(_cpp_doppler
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
+
+# Set RPATH for macOS and Linux
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 # set RPATH to PROJECT_SOURCE_DIR/install/lib and PROJECT_SOURCE_DIR/install/include
-set_target_properties(cpp_subs cpp_roche cpp_doppler PROPERTIES
-    INSTALL_RPATH "${PROJECT_SOURCE_DIR}/lib"
+set_target_properties(_cpp_subs _cpp_roche _cpp_doppler PROPERTIES
+    INSTALL_RPATH "@loader_path/../../lib"
     BUILD_WITH_INSTALL_RPATH TRUE
     INSTALL_RPATH_USE_LINK_PATH TRUE
     BUILD_RPATH_USE_ORIGIN TRUE
 )
 
 
-install(TARGETS cpp_subs cpp_roche cpp_doppler LIBRARY DESTINATION ${CMAKE_SOURCE_DIR})
+install(TARGETS _cpp_subs _cpp_roche _cpp_doppler 
+    LIBRARY DESTINATION trm_py/_cpp/
+    RUNTIME DESTINATION trm_py/_cpp/
+    )

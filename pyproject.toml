@@ -6,33 +6,34 @@ authors = [
     { name = "Pip Grylls", email = "pipgryllsastro@gmail.com"}
 ]
 readme = "README.md"
-packages = [
-{ include = "trm_py", from = "." },
-]
 
 [build-system]
 requires = [
     "scikit-build-core>=0.5.0",
+    "scikit-build-core-conan>=0.6.0",
     "setuptools>=75.6.0",
     "pybind11>=2.13.0",
     "conan>=2.9.1"
 ]
-build-backend = "scikit_build_core.build.api"
+build-backend = "scikit_build_core_conan.build"
+
+[tool.scikit_build_core_conan]
+path = "."
+build = "missing"
+profile = "default"
+options = []
+settings = []
+config = []
+generator = "Ninja"
+output-folder = "build"
 
 [tool.scikit-build]
-generator = "Ninja"  # Optional: Use Ninja for faster builds
-source-dir = "src"
-build-dir = "build"
+wheel.expand-macos-universal-tags = true
+minimum-version = "build-system.requires"
 
 [tool.scikit-build.cmake]
-arguments = [
-    "-DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake",
+args = [
+    "-DCMAKE_TOOLCHAIN_FILE={source_dir}/build/Release/generators/conan_toolchain.cmake",
     "-DPLPLOT_BUILD_TYPE=4",
     "-DPYTHON_SITE_PACKAGES={python_site_dir}"
-]
-
-[tool.scikit-build.command-hooks]
-pre-build = [
-    "conan install . -b missing",
-    "conan profile detect --force"
 ]
