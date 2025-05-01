@@ -37,3 +37,10 @@ args = [
     "-DPLPLOT_BUILD_TYPE=4",
     "-DPYTHON_SITE_PACKAGES={python_site_dir}"
 ]
+
+[tool.scikit-build.sdist]
+include = [
+    "trm_py/*.so",  # For Unix-like systems
+    "trm_py/*.dll", # For Windows
+    "trm_py/*.dylib" # For macOS
+]
