@@ -10,17 +10,16 @@ message("CMAKE_TOOlCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
 project(py-subs)
 message("cmake lists for trm_py")
 
-# Build PLPLOT if not already built
-# if(NOT DEFINED CMAKE_COMMON)
-#     set(CMAKE_COMMON ./cmake_common)
-# endif()
-# if(NOT DEFINED PLPLOT_FOUND)
-#     include("${CMAKE_COMMON}/plplot_install.cmake")
-# endif()
+#Build PLPLOT if not already built
+if(NOT DEFINED CMAKE_COMMON)
+    set(CMAKE_COMMON ./cmake_common)
+endif()
+if(NOT DEFINED PLPLOT_FOUND)
+    include("${CMAKE_COMMON}/plplot_install.cmake")
+endif()
 
 # These must be in order to build the subdirectories
 # roche -> binary -> subs
-#add_subdirectory(src/plplot)
 add_subdirectory(src/cpp-subs)
 add_subdirectory(src/cpp-binary)
 add_subdirectory(src/cpp-roche)

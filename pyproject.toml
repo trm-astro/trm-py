@@ -34,7 +34,7 @@ minimum-version = "build-system.requires"
 [tool.scikit-build.cmake]
 args = [
     "-DCMAKE_TOOLCHAIN_FILE={source_dir}/build/Release/generators/conan_toolchain.cmake",
-    "-DPLPLOT_BUILD_TYPE=4",
+    "-DPLPLOT_BUILD_TYPE=2",
     "-DPYTHON_SITE_PACKAGES={python_site_dir}"
 ]
 

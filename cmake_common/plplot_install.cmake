@@ -4,9 +4,10 @@
 # PLPLOT_BUILD_TYPE:
 #   Nobuild: 0 (PLPLOT_USE_PATH must be set) get lib from location
 #   Local: 1 (Default) Build in the build directory
-#   Path: 2 (PLPLOT_USE_PATH must be set)
-#   System: 3 Build in /usr/local/src/plplot
-#   Brew: 4 Use Homebrew to get the library (reccomended for mac)
+#   Submodule: 2 Use the local git submodule to build in the build directory
+#   Path: 3 (PLPLOT_USE_PATH must be set)
+#   System: 4 Build in /usr/local/src/plplot
+#   Brew: 5 Use Homebrew to get the library (reccomended for mac)
 # PLPLOT_USE_PATH (Required for Path or Nobuild)
 
 include(ExternalProject)
@@ -22,11 +23,11 @@ if (NOT DEFINED PLPLOT_LIB_NAME)
 endif()
 
 if(NOT DEFINED PLPLOT_USE_PATH)
-    if(PLPLOT_BUILD_TYPE EQUAL 0 OR PLPLOT_BUILD_TYPE EQUAL 2)
+    if(PLPLOT_BUILD_TYPE EQUAL 0 OR PLPLOT_BUILD_TYPE EQUAL 3)
         message(FATAL_ERROR "PLPLOT_USE_PATH must be set if PLPLOT_BUILD_TYPE is ${PLPLOT_BUILD_TYPE}")
-    elseif(PLPLOT_BUILD_TYPE EQUAL 1)
+    elseif(PLPLOT_BUILD_TYPE EQUAL 1 OR PLPLOT_BUILD_TYPE EQUAL 2)
         set(PLPLOT_USE_PATH ${CMAKE_BINARY_DIR}/plplot_install)
-    elseif(PLPLOT_BUILD_TYPE EQUAL 3)
+    elseif(PLPLOT_BUILD_TYPE EQUAL 4)
         set(PLPLOT_USE_PATH /usr/local/src/plplot)
     endif()
 endif()
@@ -39,7 +40,15 @@ if(PLPLOT_BUILD_TYPE EQUAL 0)
         message(FATAL_ERROR "PLPLOT_USE_PATH must be set if PLPLOT_BUILD_TYPE is 0")
     endif()
     set(PLPLOT_LIB_PATH ${PLPLOT_USE_PATH})
-elseif(PLPLOT_BUILD_TYPE EQUAL 1 OR PLPLOT_BUILD_TYPE EQUAL 2 OR PLPLOT_BUILD_TYPE EQUAL 3) # Build at defined or dfault path
+elseif(PLPLOT_BUILD_TYPE EQUAL 2) # Build from submodule
+    message("PLPLOT_BUILD_TYPE: Submodule")
+    # Assert that PLPLOT_USE_PATH is set
+    if(NOT DEFINED PLPLOT_USE_PATH)
+        message(FATAL_ERROR "PLPLOT_USE_PATH must be set if PLPLOT_BUILD_TYPE is 2")
+    endif()
+    message("Building Plplot from submodule at ${CMAKE_CURRENT_SOURCE_DIR}/src/plplot")
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/plplot)
+elseif(PLPLOT_BUILD_TYPE EQUAL 1 OR PLPLOT_BUILD_TYPE EQUAL 3 OR PLPLOT_BUILD_TYPE EQUAL 4) # Build at defined or dfault path
     # Assert that PLPLOT_USE_PATH is set
     if(NOT DEFINED PLPLOT_USE_PATH)
         message(FATAL_ERROR "PLPLOT_USE_PATH undefined")
@@ -57,10 +66,9 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 1 OR PLPLOT_BUILD_TYPE EQUAL 2 OR PLPLOT_BUILD_TY
                 -DENABLE_tcl=OFF               # Disable Tcl bindings if not needed
         INSTALL_DIR ${PLPLOT_USE_PATH}
     )
-    add_dependencies(${PACKAGE_NAME} plplot)
     set(PLPLOT_LIB_PATH ${PLPLOT_USE_PATH})
 
-elseif(PLPLOT_BUILD_TYPE EQUAL 4) # Brew build of PLPLOT
+elseif(PLPLOT_BUILD_TYPE EQUAL 5) # Brew build of PLPLOT
     message("PLPLOT_BUILD_TYPE: Brew")
     # Set PLplot paths using Homebrew's default install location
     set(PLPLOT_LIB_PATH /opt/homebrew/opt/plplot)
@@ -69,9 +77,10 @@ endif()
 if(NOT DEFINED PLPLOT_LIB_PATH)
     message(FATAL_ERROR "PLPLOT_LIB_PATH undefined")
 else()
+    get_filename_component(PLPLOT_LIB_PATH ${PLPLOT_LIB_PATH} ABSOLUTE)
     set(PLPLOT_INCLUDE_DIR ${PLPLOT_LIB_PATH}/include/plplot)
     set(PLPLOT_LIB_DIR ${PLPLOT_LIB_PATH}/lib)
-    set(PLPLOT_LIB ${PLPLOT_LIB_DIR}/${PLPLOT_LIB_NAME})
+    get_filename_component(PLPLOT_LIB ${PLPLOT_LIB_DIR}/${PLPLOT_LIB_NAME} ABSOLUTE)
     set(PLPLOT_FOUND TRUE)
     message("PLPLOT_INCLUDE_DIR: ${PLPLOT_INCLUDE_DIR}")
     message("PLPLOT_LIB_DIR: ${PLPLOT_LIB_DIR}")
