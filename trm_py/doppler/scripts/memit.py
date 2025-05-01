@@ -1,5 +1,5 @@
 import argparse
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 from .. import afits, Map, Data
 
 def memit(args=None):

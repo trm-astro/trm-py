@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 #from trm import pgram
 from .. import Data, Map, afits
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 
 def vrrec(args=None):
     usage = \

@@ -3,7 +3,7 @@
 import argparse
 import numpy as np
 import copy
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 from .. import Map, Data, afits
 
 

@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 from astropy.io import fits
 from .. import Map, Data, Grid, afits, genvec, genmat
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 
 def precover(args=None):
     """precover is a Monte Carlo routine to test period recovery via SVD. It

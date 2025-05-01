@@ -1,7 +1,7 @@
 import argparse, os, configparser
 import numpy as np
 from astropy.io import fits
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 
 
 def makedata(args=None):

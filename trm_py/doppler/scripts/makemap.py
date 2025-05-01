@@ -4,7 +4,7 @@ import argparse, os, configparser
 import numpy as np
 from scipy import ndimage
 from astropy.io import fits
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 
 
 def makemap(args=None):

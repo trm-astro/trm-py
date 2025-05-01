@@ -4,7 +4,7 @@ import argparse
 from .. import (
     Map,
     afits,
-    cpp_doppler as doppler,
+    _cpp_doppler as doppler,
 )
 
 __all__ = ['comdef',]

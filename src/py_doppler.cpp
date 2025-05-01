@@ -7,7 +7,7 @@ namespace py = pybind11;
 
 void init_doppler(py::module &);
 
-PYBIND11_MODULE(cpp_doppler, m) {
+PYBIND11_MODULE(_cpp_doppler, m) {
     m.doc() = "Doppler Library";
     // Initialize the submodule `doppler`
     init_doppler(m);

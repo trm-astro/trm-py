@@ -4,7 +4,7 @@ import copy
 import math as m
 import numpy as np
 
-from py_subs import cpp_subs
+from .._cpp import _cpp_subs
 
 # Constants 
 ME     = 9.1093897e-31     # Mass of the electron, SI
@@ -37,7 +37,7 @@ def voigt(a, x, eps=1.e-8):
     Outputs:
     returns the Voigt function (double or numpy array)    
     """
-    return cpp_subs.voigt(a, x)
+    return _cpp_subs.voigt(a, x)
 
 
 def gammq(a, x):
@@ -48,7 +48,7 @@ def gammq(a, x):
     Outputs
     returns the incomplete gamma function (double or numpy array)
     """
-    return cpp_subs.gammq(a, x)
+    return _cpp_subs.gammq(a, x)
 
 
 def planck(wave, temp, units='FLAM'):

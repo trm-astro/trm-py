@@ -10,7 +10,7 @@ namespace py = pybind11;
 
 void init_roche(py::module &);
 
-PYBIND11_MODULE(cpp_roche, m) {
+PYBIND11_MODULE(_cpp_roche, m) {
     m.doc() = "Roche Library";
     // Initialize the submodule `roche`
     //py::module_ roche = m.def_submodule("roche", "interface to cpp-roche");

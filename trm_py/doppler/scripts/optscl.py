@@ -3,7 +3,7 @@
 import argparse
 import numpy as np
 from scipy import linalg
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 from .. import Map, Data, afits 
 import copy
 

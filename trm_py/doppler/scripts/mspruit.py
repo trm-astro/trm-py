@@ -4,7 +4,7 @@ import argparse
 from astropy.io import fits
 import numpy as np
 from .. import Image, afits, Map
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 
 
 def mspruit(args=None):

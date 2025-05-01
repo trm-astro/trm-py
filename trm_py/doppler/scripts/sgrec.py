@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 from .. import Map, Data, afits, rfits, 
 # from trm import pgram # what is this?
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 from py_subs import subs
 
 def sgrec(args=None):

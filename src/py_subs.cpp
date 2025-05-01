@@ -7,7 +7,7 @@ namespace py = pybind11;
 
 void init_subs(py::module &);
 
-PYBIND11_MODULE(cpp_subs, m) {
+PYBIND11_MODULE(_cpp_subs, m) {
     m.doc() = "Subs Library";
 
     // Create the submodule `subs`

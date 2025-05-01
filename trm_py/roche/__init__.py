@@ -52,7 +52,7 @@ RocheError -- exception class
 
 import math as m
 import numpy as np
-from py_subs.cpp_roche import (
+from .._cpp._cpp_roche import (
     bspot,
     face,
     fblink,

@@ -4,7 +4,7 @@ import numpy as np
 from .. import (
     Map,
     Data,
-    cpp_doppler as doppler
+    _cpp_doppler as doppler
 )
 
 

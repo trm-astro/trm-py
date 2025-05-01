@@ -2,9 +2,22 @@
 
 This is the python wrapper around trm-subs and some other trm c++ software.
 
-This is the update to many of the repositories found [here](https://github.com/trmrsh?tab=repositories&q=&type=&language=python&sort=). The code will create a drop in replacement via the form `from trm_py import <name> as trm_<name>` or `from trm_py.<name> import <fun>`. For new development `import trm_py` or `from trm_py import name` should be preferred with tool access via `trm_py.<name>.<tool>` or `<name>.<tool>`.
+This is the update to many of the repositories found [here](https://github.com/trmrsh?tab=repositories&q=&type=&language=python&sort=).
+This code provides drop in replacements for the python codes.
+The following four main libraries are available:
 
-This code will be installable via `pip install trm-py` from PyPi (and potentially via Conda). This code will not require additional C++ libaray installations as it will come formost as a `bdist` for most common platforms and a `sdist` to support build and installation on uncommon platforms.
+- trm_py.subs
+- trm_py.roche
+- trm_py.doppler
+- trm_py.observing
+
+In addition direct access to the python bindings to the cpp code is available:
+
+- trm_py._cpp._cpp_subs
+- trm_py._cpp._cpp_roche
+- trm_py._cpp.cpp_doppler
+
+This code will be installable via `pip install trm-py` from PyPi (and potentially via Conda). This code *will not* require additional C++ library installations separate from the python build system.
 
 Until further notice this is a WIP and should not be considered usable for scientific use.
 

@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 from scipy.optimize import minimize_scalar, bracket
 from .. import Map, Data, afits
-from .. import cpp_doppler as doppler
+from .. import _cpp_doppler as doppler
 import copy
 
 __all__ = ['optgam',]

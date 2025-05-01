@@ -2,7 +2,7 @@
 
 import argparse
 import numpy as np
-from trm import doppler
+from .. import _cpp_doppler as doppler
 from .. import Grid, Data, afits, genmat
 from astropy.io import fits
 
