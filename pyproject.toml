@@ -27,13 +27,13 @@ generator = "Ninja"
 output-folder = "build"
 [[tool.scikit-build-core-conan.overrides]]
 if.platform-system = "Linux"
-profile = "ubuntu-latest"
+profile = "./.github/conan-profiles/ubuntu-latest"
 [[tool.scikit-build-core-conan.overrides]]
 if.platform-system = "Windows"
-profile = "windows-latest"
+profile = "./.github/conan-profiles/windows-latest"
 [[tool.scikit-build-core-conan.overrides]]
 if.platform-system = "Darwin"
-profile = "macos-latest"
+profile = "./.github/conan-profiles/macos-latest"
 
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true

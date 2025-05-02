@@ -16,32 +16,35 @@ jobs:
         strategy:
           fail-fast: false
           matrix:
+            os: [ linux-intel, linux-arm, windows, macOS-intel, macOS-arm]
             include:
-                - os: ubuntu-latest
-                  compiler: gnu17
-                - os: macos-latest
-                - os: windows-latest
-                  compiler: msvc
+              - archs: auto
+                platform: auto
+              - os: linux-intel
+                runs-on: ubuntu-latest
+              - os: linux-arm
+                runs-on: ubuntu-24.04-arm
+              - os: windows
+                runs-on: windows-latest
+              - os: macos-intel
+                # macos-13 was the last x86_64 runner
+                runs-on: macos-13
+              - os: macos-arm
+                # macos-14+ (including latest) are ARM64 runners
+                runs-on: macos-latest
+                archs: auto,universal2
             
         steps:
         - uses: actions/checkout@v4
           with:
             submodules: true
-        
-        - uses: conan-io/setup-conan@v1
-          with:
-            config_urls: https://github.com/trm-astro/conan-profiles.git
-            cache_packages: true   
-
-
 
         - uses: astral-sh/setup-uv@v4
     
-        - uses: pypa/cibuildwheel@v2.22
+        - uses: pypa/cibuildwheel@v2.23.3
           env:
-            CIBW_ENABLE: cpython-prerelease
-            CIBW_ARCHS_WINDOWS: auto ARM64
-            CIBW_ENVIRONMENT: CXXFLAGS="-std=c++17"
+            CIBW_PLATFORM: ${{ matrix.platform }}
+            CIBW_ARCHS: ${{ matrix.archs }}
     
         - name: Verify clean directory
           run: git diff --exit-code
