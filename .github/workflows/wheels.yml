@@ -24,12 +24,23 @@ jobs:
             submodules: true
     
         - uses: astral-sh/setup-uv@v4
+
+        - name: Set CXXFLAGS for OS
+          run: |
+            if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+              echo "CXXFLAGS=-std=c++17" >> $GITHUB_ENV
+            elif [[ "${{ matrix.os }}" == "macos-13" || "${{ matrix.os }}" == "macos-latest" ]]; then
+              echo "CXXFLAGS=-std=c++17" >> $GITHUB_ENV
+            elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+              echo "CXXFLAGS=/std:c++17" >> $GITHUB_ENV
+            fi
+          shell: bash
     
         - uses: pypa/cibuildwheel@v2.22
           env:
             CIBW_ENABLE: cpython-prerelease
             CIBW_ARCHS_WINDOWS: auto ARM64
-            CIBW_ENVIRONMENT: CXXFLAGS="-std=c++17"
+            CIBW_ENVIRONMENT: ${{ env.CXXFLAGS }}
     
         - name: Verify clean directory
           run: git diff --exit-code
