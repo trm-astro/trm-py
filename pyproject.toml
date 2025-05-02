@@ -23,7 +23,9 @@ path = "."
 build = "missing"
 profile = "default"
 options = []
-settings = []
+settings = [
+    "compiler.cppstd=17",
+]
 config = []
 generator = "Ninja"
 output-folder = "build"
