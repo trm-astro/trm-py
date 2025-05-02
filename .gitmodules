@@ -20,3 +20,6 @@
 [submodule "src/plplot"]
 	path = src/plplot
 	url = git@github.com:PLplot/PLplot.git
+[submodule ".github/conan-profiles"]
+	path = .github/conan-profiles
+	url = git@github.com:trm-astro/conan-profiles.git
