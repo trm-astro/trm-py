@@ -1,0 +1,40 @@
+name: Wheels
+
+on:
+  push:
+    branches:
+      - scikit-build
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+    build_wheels:
+        name: Wheels on ${{ matrix.os }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+          fail-fast: false
+          matrix:
+            os: [ubuntu-latest, macos-13, macos-latest, windows-latest]
+    
+        steps:
+        - uses: actions/checkout@v4
+          with:
+            submodules: true
+    
+        - uses: astral-sh/setup-uv@v4
+    
+        - uses: pypa/cibuildwheel@v2.22
+          env:
+            CIBW_ENABLE: cpython-prerelease
+            CIBW_ARCHS_WINDOWS: auto ARM64
+    
+        - name: Verify clean directory
+          run: git diff --exit-code
+          shell: bash
+    
+        - uses: actions/upload-artifact@v4
+          with:
+            name: cibw-wheels-${{ matrix.os }}
+            path: wheelhouse/*.whl
