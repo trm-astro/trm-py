@@ -9,7 +9,6 @@ readme = "README.md"
 
 [build-system]
 requires = [
-    "scikit-build-core>=0.5.0",
     "scikit-build-core-conan>=0.6.0",
     "setuptools>=75.6.0",
     "pybind11>=2.13.0",
