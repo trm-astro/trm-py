@@ -28,21 +28,12 @@ output-folder = "build"
 [[tool.scikit-build-core-conan.overrides]]
 if.platform-system = "Linux"
 profile = "ubuntu-latest"
-settings = [
-    compiler.cppstd = "17",
-]
 [[tool.scikit-build-core-conan.overrides]]
 if.platform-system = "Windows"
 profile = "windows-latest"
-settings = [
-    compiler.cppstd = "17",
-]
 [[tool.scikit-build-core-conan.overrides]]
 if.platform-system = "Darwin"
 profile = "macos-latest"
-settings = [
-    compiler.cppstd = "17",
-]
 
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true
