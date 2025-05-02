@@ -16,3 +16,6 @@ sofa/*:shared=True
 pcre2/*:shared=True
 llvm-openmp/*:shared=True
 fftw/*:shared=True
+
+[settings]
+compiler.cppstd=17
