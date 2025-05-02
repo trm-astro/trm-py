@@ -29,6 +29,7 @@ jobs:
           env:
             CIBW_ENABLE: cpython-prerelease
             CIBW_ARCHS_WINDOWS: auto ARM64
+            CIBW_ENVIRONMENT: CXXFLAGS="-std=c++17"
     
         - name: Verify clean directory
           run: git diff --exit-code
