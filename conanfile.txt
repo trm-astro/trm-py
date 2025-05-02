@@ -16,6 +16,3 @@ sofa/*:shared=True
 pcre2/*:shared=True
 llvm-openmp/*:shared=True
 fftw/*:shared=True
-
-[conf]
-tools.build:cxxflags=["-std=c++17"]

@@ -28,6 +28,16 @@ jobs:
         - uses: actions/checkout@v4
           with:
             submodules: true
+        
+        - uses: conan-io/setup-conan@v2
+          with:
+            conanfile: conanfile.py
+            build_type: Release
+            settings: os=${{ matrix.os }}, compiler=${{ matrix.compiler }}, build_type=Release, arch=x86_64
+            options: shared=True, fPIC=True
+            update: true
+            remotes: conancenter
+            install: true
     
         - uses: astral-sh/setup-uv@v4
     
