@@ -29,16 +29,8 @@ jobs:
           with:
             submodules: true
         
-        - uses: conan-io/setup-conan@v2
-          with:
-            conanfile: conanfile.py
-            build_type: Release
-            settings: os=${{ matrix.os }}, compiler=${{ matrix.compiler }}, build_type=Release, arch=x86_64
-            options: shared=True, fPIC=True
-            update: true
-            remotes: conancenter
-            install: true
-    
+        - uses: conan-io/setup-conan@v1
+
         - uses: astral-sh/setup-uv@v4
     
         - uses: pypa/cibuildwheel@v2.22
