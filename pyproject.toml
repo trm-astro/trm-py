@@ -22,6 +22,11 @@ build-backend = "scikit_build_core_conan.build"
 path = "."
 build = "missing"
 options = []
+settings = [
+    "compiler.cppstd=gnu++17",
+    "compiler.libcxx=libc++",
+    "compiler.version=17",
+]
 config = []
 generator = "Ninja"
 output-folder = "build"
