@@ -31,7 +31,7 @@ output-folder = "build"
 if.platform-system = "linux"
 profile = ".github/conan-profiles/ubuntu-latest"
 [[tool.scikit-build-core-conan.overrides]]
-if.platform-system = "windows"
+if.platform-system = "win32"
 profile = ".github/conan-profiles/windows-latest"
 [[tool.scikit-build-core-conan.overrides]]
 if.platform-system = "darwin"
