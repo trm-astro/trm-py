@@ -46,6 +46,6 @@ include = [
 ]
 
 [tool.cibuildwheel]
-envrionment = {CXXFLAGS="-std=c++17", CPPFLAGS="-std=c++17"}
+environment = {CXXFLAGS="-std=c++17", CPPFLAGS="-std=c++17"}
 
 
