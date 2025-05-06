@@ -27,6 +27,14 @@ config = []
 generator = "Ninja"
 output-folder = "build"
 
+[[tool.scikit-build-core-conan.overrides]]
+if.platform-system = "linux"
+profile = ".github/conan-profiles/ubuntu-latest"
+if.platform-system = "windows"
+profile = ".github/conan-profiles/windows-latest"
+if.platform-system = "macos"
+profile = ".github/conan-profiles/macos-latest"
+
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true
 minimum-version = "build-system.requires"
