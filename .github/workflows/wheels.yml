@@ -45,6 +45,8 @@ jobs:
           env:
             CIBW_PLATFORM: ${{ matrix.platform }}
             CIBW_ARCHS: ${{ matrix.archs }}
+          with:
+            config-file: "pyproject.toml"
     
         - name: Verify clean directory
           run: git diff --exit-code
