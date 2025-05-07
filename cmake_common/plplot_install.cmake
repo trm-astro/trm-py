@@ -92,6 +92,7 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         set(PLPLOT_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/installed/x64-windows)
     else()
         message(FATAL_ERROR "PLPLOT_BUILD_TYPE: Unsupported platform")
+    endif()
 endif()
 
 if(NOT DEFINED PLPLOT_LIB_PATH)
