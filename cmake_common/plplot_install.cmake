@@ -20,7 +20,13 @@ endif()
 #TODO: Test this
 # We need to set the name for the plplot lib
 if (NOT DEFINED PLPLOT_LIB_NAME)
-    set(PLPLOT_LIB_NAME libplplotcxx.dylib) # works on mac
+    if (WIN32)
+        set(PLPLOT_LIB_NAME libplplotcxx.dll) 
+    elseif (UNIX)
+        set(PLPLOT_LIB_NAME libplplotcxx.so) 
+    elseif (APPLE)
+        set(PLPLOT_LIB_NAME libplplotcxx.dylib) # works on mac
+    endif()
 endif()
 
 if(NOT DEFINED PLPLOT_USE_PATH)
@@ -84,12 +90,14 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         set(PLPLOT_LIB_PATH /opt/homebrew/opt/plplot)
     elseif(UNIX)
         message("PLPLOT_BUILD_TYPE: apt")
-        # Set PLplot paths using Homebrew's default install location
-        set(PLPLOT_LIB_PATH /usr/local/opt/plplot)
+        # use dpkg to get location of plplot
+        set(PLPLOT_LIB_PATH $(dpkg-query -L libplplot-dev | grep {PLPLOT_LIB_NAME}))
+        # cut the path to get the lib directory
+        set(PLPLOT_LIB_PATH ${PLPLOT_LIB_PATH%/*})
     elseif(WIN32)
         message("PLPLOT_BUILD_TYPE: vcpkg")
         # Set PLplot paths using vcpkg's default install location
-        set(PLPLOT_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/installed/x64-windows)
+        find_package(plplot CONFIG REQUIRED)
     else()
         message(FATAL_ERROR "PLPLOT_BUILD_TYPE: Unsupported platform")
     endif()

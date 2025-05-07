@@ -26,7 +26,7 @@ jobs:
           if: matrix.os == 'ubuntu-latest'
           run: |
             sudo apt-get update
-            sudo apt-get install -y libplplot-dev libplplotcxx-dev libplplot-qt5-dev libplplot-qt6-dev
+            sudo apt-get install -y libplplot-dev libplplotcxx15
     
         - name: Install PLPlot on macOS
           if: matrix.os == 'macos-latest'
