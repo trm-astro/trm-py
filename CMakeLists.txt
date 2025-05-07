@@ -71,7 +71,7 @@ pybind11_add_module(_cpp_doppler ${DOPPLER_SOURCES})
 target_link_libraries(_cpp_doppler 
     PUBLIC
         FFTW3::fftw3
-        mem
+        trm-mem
         pybind11::headers
 )
 
