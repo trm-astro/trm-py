@@ -92,12 +92,10 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         message("PLPLOT_BUILD_TYPE: apt")
         # use dpkg to get location of plplot
         execute_process(
-            COMMAND dpkg-query -L libplplot-dev
-            OUTPUT_VARIABLE PLPLOT_FILES
+            COMMAND dpkg-query -L libplplot-dev | grep ${PLPLOT_LIB_NAME}
+            OUTPUT_VARIABLE PLPLOT_FULL_PATH
         )
-        
-        string(REGEX MATCH ".*/${PLPLOT_LIB_NAME}[^ \n]*" PLPLOT_MATCHED_LIB ${PLPLOT_FILES})
-        get_filename_component(PLPLOT_LIB_PATH "${PLPLOT_MATCHED_LIB}" DIRECTORY)        
+        get_filename_component(PLPLOT_LIB_PATH "${PLPLOT_FULL_PATH}" DIRECTORY)        
     elseif(WIN32)
         message("PLPLOT_BUILD_TYPE: vcpkg")
         # Set PLplot paths using vcpkg's default install location
