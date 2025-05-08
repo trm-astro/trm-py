@@ -92,10 +92,12 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         message("PLPLOT_BUILD_TYPE: apt")
         # use dpkg to get location of plplot
         execute_process(
-            COMMAND dpkg-query -L libplplot-dev | grep ${PLPLOT_LIB_NAME}
+            COMMAND dpkg-query -L libplplot-dev | grep "${PLPLOT_LIB_NAME}"
             OUTPUT_VARIABLE PLPLOT_FULL_PATH
         )
-        cmake_path(REMOVE_FILENAME PLPLOT_FULL_PATH OUTPUT_VARIABLE PLPLOT_LIB_PATH)        
+        message("dpkg found: PLPLOT_FULL_PATH: ${PLPLOT_FULL_PATH}")
+        cmake_path(REMOVE_FILENAME "${PLPLOT_FULL_PATH}" OUTPUT_VARIABLE PLPLOT_LIB_PATH)
+        message("cmake resolved parent as: PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
     elseif(WIN32)
         message("PLPLOT_BUILD_TYPE: vcpkg")
         # Set PLplot paths using vcpkg's default install location
@@ -108,7 +110,6 @@ endif()
 if(NOT DEFINED PLPLOT_LIB_PATH)
     message(FATAL_ERROR "PLPLOT_LIB_PATH undefined")
 else()
-
     message("pre-resolve PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
     file(REAL_PATH "${PLPLOT_LIB_PATH}" PLPLOT_LIB_PATH)
     set(PLPLOT_INCLUDE_DIR ${PLPLOT_LIB_PATH}/include/plplot)
