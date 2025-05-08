@@ -95,7 +95,7 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
             COMMAND dpkg-query -L libplplot-dev | grep ${PLPLOT_LIB_NAME}
             OUTPUT_VARIABLE PLPLOT_FULL_PATH
         )
-        cmake_path(GET PLPLOT_FULL_PATH PARENT_PATH PLPLOT_LIB_PATH)        
+        cmake_path(REMOVE_FILENAME PLPLOT_FULL_PATH OUTPUT_VARIABLE PLPLOT_LIB_PATH)        
     elseif(WIN32)
         message("PLPLOT_BUILD_TYPE: vcpkg")
         # Set PLplot paths using vcpkg's default install location
