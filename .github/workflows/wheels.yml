@@ -21,39 +21,15 @@ jobs:
         - uses: actions/checkout@v4
           with:
             submodules: true
-        - name: Install PLPlot on Ubuntu
-          if: matrix.os == 'ubuntu-latest'
-          run: |
-            sudo apt-get update
-            sudo apt-get install -y libplplot-dev libplplotcxx15
-    
-        - name: Install PLPlot on macOS
-          if: matrix.os == 'macos-latest'
-          run: |
-            brew update
-            brew install plplot
-    
-        - name: Install PLPlot on Windows
-          if: matrix.os == 'windows-latest'
-          run: |
-            vcpkg install plplot
-          
-        - name: Cache vcpkg (Windows only)
-          if: matrix.os == 'windows-latest'
-          uses: actions/cache@v3
-          with:
-            path: vcpkg
-            key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
-            restore-keys: |
-              vcpkg-${{ runner.os }}
-        
-        - name: Debug PLplot installation
-          if: matrix.os == 'ubuntu-latest'
-          run: |
-            ls -l /usr/lib/x86_64-linux-gnu/libplplot*
-            ls -l /usr/include/plplot*
       
         - uses: pypa/cibuildwheel@v2.23.3
+          env:
+            CIBW_BEFORE_BUILD_LINUX: |
+              yum install -y libplplot-dev libplplotcxx15
+            CIBW_BEFORE_BUILD_MACOS: |
+              brew install plplot
+            CIBW_BEFORE_BUILD_WINDOWS: |
+              vcpkg install plplot
           with:
             config-file: "pyproject.toml"
     
