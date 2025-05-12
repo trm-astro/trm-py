@@ -90,10 +90,14 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         set(PLPLOT_LIB_PATH /opt/homebrew/opt/plplot)
     elseif(UNIX)
         message("PLPLOT_BUILD_TYPE: apt")
-        
+        file(GLOB PLPLOT_DEBUG_LIBS "/usr/lib/x86_64-linux-gnu/")
+        message(STATUS "Contents of /usr/lib/x86_64-linux-gnu/:")
+        foreach(lib_file IN LISTS PLPLOT_DEBUG_LIBS)
+            message(STATUS "  - ${lib_file}")
+        endforeach()
         find_library(PLPLOT_LIB
-            NAMES plplot
-            PATHS /usr/lib /usr/local/lib /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu /lib/x86_64-linux-gnu/ /lib/aarch64-linux-gnu/ 
+            NAMES plplotcxx
+            HINTS /usr/lib /usr/local/lib /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu /lib/x86_64-linux-gnu/ /lib/aarch64-linux-gnu/ 
             REQUIRED
         )
         # Extract the directory path
