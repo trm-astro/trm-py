@@ -48,6 +48,7 @@ jobs:
               vcpkg-${{ runner.os }}
         
         - name: Debug PLplot installation
+          if: matrix.os == 'ubuntu-latest'
           run: |
             ls -l /usr/lib/x86_64-linux-gnu/libplplot*
             ls -l /usr/include/plplot*
