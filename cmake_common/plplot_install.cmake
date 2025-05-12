@@ -92,7 +92,7 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         message("PLPLOT_BUILD_TYPE: apt")
         # use dpkg to get location of plplot
         execute_process(
-            COMMAND dpkg-query -L libplplot-dev
+            COMMAND "dpkg-query -L libplplot-dev"
             OUTPUT_VARIABLE PLPLOT_FILES
         )
         message("dpkg found: PLPLOT_FILES: ${PLPLOT_FILES}")
