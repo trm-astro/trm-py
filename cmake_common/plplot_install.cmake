@@ -90,61 +90,19 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         set(PLPLOT_LIB_PATH /opt/homebrew/opt/plplot)
     elseif(UNIX)
         message("PLPLOT_BUILD_TYPE: apt")
-
-        # Clear previous values
-        unset(PLPLOT_INCLUDE_DIRS CACHE)
-        unset(PLPLOT_LIBRARIES CACHE)
-        
-        message(STATUS "Attempting to locate system-installed PLplot...")
-        
-        # Common candidates
-        set(POSSIBLE_INCLUDE_DIRS
-            /usr/include
-            /usr/local/include
-            /opt/homebrew/include      # Apple Silicon Homebrew
-            /usr/local/opt/plplot/include
-        )
-        
-        set(POSSIBLE_LIBRARY_DIRS
-            /usr/lib
-            /usr/local/lib
-            /opt/homebrew/lib
-            /usr/local/opt/plplot/lib
-        )
-        
-        # Allow user override
-        if(DEFINED ENV{PLPLOT_ROOT})
-            list(APPEND POSSIBLE_INCLUDE_DIRS "$ENV{PLPLOT_ROOT}/include")
-            list(APPEND POSSIBLE_LIBRARY_DIRS "$ENV{PLPLOT_ROOT}/lib")
-        endif()
-        
-        find_path(PLPLOT_INCLUDE_DIR
-            NAMES plplot.h
-            PATHS ${POSSIBLE_INCLUDE_DIRS}
-            DOC "PLplot include directory"
-        )
-        
-        find_library(PLPLOT_LIBRARY
-            NAMES plplotd plplot
-            PATHS ${POSSIBLE_LIBRARY_DIRS}
-            DOC "PLplot library"
-        )
-        
-        if(PLPLOT_INCLUDE_DIR AND PLPLOT_LIBRARY)
-            message(STATUS "Found PLplot include dir: ${PLPLOT_INCLUDE_DIR}")
-            message(STATUS "Found PLplot library: ${PLPLOT_LIBRARY}")
-        
-            set(PLPLOT_INCLUDE_DIRS ${PLPLOT_INCLUDE_DIR} CACHE PATH "Path to PLplot includes")
-            set(PLPLOT_LIBRARIES ${PLPLOT_LIBRARY} CACHE FILEPATH "Path to PLplot library")
-        
-            mark_as_advanced(PLPLOT_INCLUDE_DIRS PLPLOT_LIBRARIES)
+        # Manually search for the plplot library
+        # it's going to be in usr/lib
+        # then we need the achitecture specific path
+        if (EXISTS "/usr/lib/x86_64-linux-gnu/${PLPLOT_LIB_NAME}")
+            set(PLPLOT_LIB_PATH /usr/lib/x86_64-linux-gnu/)
+        elseif (EXISTS "/usr/lib/aarch64-linux-gnu/${PLPLOT_LIB_NAME}")
+            set(PLPLOT_LIB_PATH /usr/lib/aarch64-linux-gnu/)
         else()
-            message(FATAL_ERROR "PLplot not found. Please install it using your system's package manager.")
+            message(FATAL_ERROR "PLPLOT_LIB_PATH not found")
         endif()
-        
-        
-        # cmake_path(REMOVE_FILENAME "${PLPLOT_FULL_PATH}" OUTPUT_VARIABLE PLPLOT_LIB_PATH)
-        # message("cmake resolved parent as: PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
+
+        cmake_path(REMOVE_FILENAME "${PLPLOT_FULL_PATH}" OUTPUT_VARIABLE PLPLOT_LIB_PATH)
+        message("cmake resolved parent as: PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
     elseif(WIN32)
         message("PLPLOT_BUILD_TYPE: vcpkg")
         # Set PLplot paths using vcpkg's default install location
