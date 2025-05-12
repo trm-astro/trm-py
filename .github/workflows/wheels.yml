@@ -46,7 +46,12 @@ jobs:
             key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
             restore-keys: |
               vcpkg-${{ runner.os }}
-
+        
+        - name: Debug PLplot installation
+          run: |
+            ls -l /usr/lib/x86_64-linux-gnu/libplplot*
+            ls -l /usr/include/plplot*
+      
         - uses: pypa/cibuildwheel@v2.23.3
           with:
             config-file: "pyproject.toml"

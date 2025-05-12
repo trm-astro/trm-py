@@ -90,25 +90,19 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         set(PLPLOT_LIB_PATH /opt/homebrew/opt/plplot)
     elseif(UNIX)
         message("PLPLOT_BUILD_TYPE: apt")
-        message("Looking for: ${PLPLOT_LIB_NAME}")
-        # Manually search for the plplot library
-        # it's going to be in usr/lib
-        # then we need the achitecture specific path
-        if (EXISTS "/usr/lib/x86_64-linux-gnu/${PLPLOT_LIB_NAME}")
-            set(PLPLOT_LIB_PATH /usr/lib/x86_64-linux-gnu/)
-        elseif (EXISTS "/usr/lib/aarch64-linux-gnu/${PLPLOT_LIB_NAME}")
-            set(PLPLOT_LIB_PATH /usr/lib/aarch64-linux-gnu/)
-        elseif (EXISTS "/usr/lib/${PLPLOT_LIB_NAME}")
-            set(PLPLOT_LIB_PATH /usr/lib/)
-        elseif (EXISTS "/usr/local/lib/${PLPLOT_LIB_NAME}")
-            set(PLPLOT_LIB_PATH /usr/local/lib/)
-        elseif (EXISTS "/lib/x86_64-linux-gnu/${PLPLOT_LIB_NAME}")
-            set(PLPLOT_LIB_PATH /lib/x86_64-linux-gnu/)
-        else()
-            message(FATAL_ERROR "PLPLOT_LIB_PATH not found")
-        endif()
+        
+        find_library(PLPLOT_LIB
+            NAMES plplot
+            PATHS /usr/lib /usr/local/lib /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu /lib/x86_64-linux-gnu/ /lib/aarch64-linux-gnu/ 
+            REQUIRED
+        )
+        # Extract the directory path
+        get_filename_component(PLPLOT_LIB_PATH "${PLPLOT_LIB}" DIRECTORY)
+        message(STATUS "PLplot library path: ${PLPLOT_LIB_PATH}")
 
-
+        # Extract the file name (libplplot.so)
+        get_filename_component(PLPLOT_LIB_NAME "${PLPLOT_LIB}" NAME)
+        message(STATUS "PLplot library name: ${PLPLOT_LIB_NAME}")
         #cmake_path(REMOVE_FILENAME "${PLPLOT_FULL_PATH}" OUTPUT_VARIABLE PLPLOT_LIB_PATH)
         message("cmake resolved parent as: PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
     elseif(WIN32)
