@@ -90,6 +90,7 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         set(PLPLOT_LIB_PATH /opt/homebrew/opt/plplot)
     elseif(UNIX)
         message("PLPLOT_BUILD_TYPE: apt")
+        message("Looking for: ${PLPLOT_LIB_NAME}")
         # Manually search for the plplot library
         # it's going to be in usr/lib
         # then we need the achitecture specific path
@@ -97,11 +98,16 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
             set(PLPLOT_LIB_PATH /usr/lib/x86_64-linux-gnu/)
         elseif (EXISTS "/usr/lib/aarch64-linux-gnu/${PLPLOT_LIB_NAME}")
             set(PLPLOT_LIB_PATH /usr/lib/aarch64-linux-gnu/)
+        elseif (EXISTS "/usr/lib/${PLPLOT_LIB_NAME}")
+            set(PLPLOT_LIB_PATH /usr/lib/)
+        elseif (EXISTS "/usr/local/lib/${PLPLOT_LIB_NAME}")
+            set(PLPLOT_LIB_PATH /usr/local/lib/)
         else()
             message(FATAL_ERROR "PLPLOT_LIB_PATH not found")
         endif()
 
-        cmake_path(REMOVE_FILENAME "${PLPLOT_FULL_PATH}" OUTPUT_VARIABLE PLPLOT_LIB_PATH)
+
+        #cmake_path(REMOVE_FILENAME "${PLPLOT_FULL_PATH}" OUTPUT_VARIABLE PLPLOT_LIB_PATH)
         message("cmake resolved parent as: PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
     elseif(WIN32)
         message("PLPLOT_BUILD_TYPE: vcpkg")
