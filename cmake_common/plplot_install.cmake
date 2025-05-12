@@ -102,6 +102,8 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
             set(PLPLOT_LIB_PATH /usr/lib/)
         elseif (EXISTS "/usr/local/lib/${PLPLOT_LIB_NAME}")
             set(PLPLOT_LIB_PATH /usr/local/lib/)
+        elseif (EXISTS "/lib/x86_64-linux-gnu/${PLPLOT_LIB_NAME}")
+            set(PLPLOT_LIB_PATH /lib/x86_64-linux-gnu/)
         else()
             message(FATAL_ERROR "PLPLOT_LIB_PATH not found")
         endif()
