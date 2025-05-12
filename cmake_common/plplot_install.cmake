@@ -95,6 +95,7 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
             COMMAND dpkg-query -L libplplot-dev
             OUTPUT_VARIABLE PLPLOT_FILES
         )
+        message("dpkg found: PLPLOT_FILES: ${PLPLOT_FILES}")
         string(FIND "${PLPLOT_FILES}" "${PLPLOT_LIB_NAME}" PLPLOT_FOUND_INDEX)
         if(PLPLOT_FOUND_INDEX EQUAL -1)
             message(FATAL_ERROR "Library ${PLPLOT_LIB_NAME} not found in dpkg-query output")
