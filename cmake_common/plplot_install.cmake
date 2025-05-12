@@ -92,10 +92,23 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         message("PLPLOT_BUILD_TYPE: apt")
         # use dpkg to get location of plplot
         execute_process(
-            COMMAND dpkg-query -L libplplot-dev | grep "${PLPLOT_LIB_NAME}"
-            OUTPUT_VARIABLE PLPLOT_FULL_PATH
+            COMMAND dpkg-query -L libplplot-dev
+            OUTPUT_VARIABLE PLPLOT_FILES
         )
-        message("dpkg found: PLPLOT_FULL_PATH: ${PLPLOT_FULL_PATH}")
+        string(FIND "${PLPLOT_FILES}" "${PLPLOT_LIB_NAME}" PLPLOT_FOUND_INDEX)
+        if(PLPLOT_FOUND_INDEX EQUAL -1)
+            message(FATAL_ERROR "Library ${PLPLOT_LIB_NAME} not found in dpkg-query output")
+        else()
+            string(REGEX MATCH "${PLPLOT_LIB_NAME}" PLPLOT_FULL_PATH "${PLPLOT_FILES}")
+            message("PLPLOT_FULL_PATH: ${PLPLOT_FULL_PATH}")
+        endif()
+
+
+        # execute_process(
+        #     COMMAND dpkg-query -L libplplot-dev | grep "${PLPLOT_LIB_NAME}"
+        #     OUTPUT_VARIABLE PLPLOT_FULL_PATH
+        # )
+        # message("dpkg found: PLPLOT_FULL_PATH: ${PLPLOT_FULL_PATH}")
         cmake_path(REMOVE_FILENAME "${PLPLOT_FULL_PATH}" OUTPUT_VARIABLE PLPLOT_LIB_PATH)
         message("cmake resolved parent as: PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
     elseif(WIN32)
