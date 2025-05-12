@@ -13,10 +13,28 @@ message("cmake lists for trm_py")
 #Build PLPLOT if not already built
 if(NOT DEFINED CMAKE_COMMON)
     set(CMAKE_COMMON ./cmake_common)
+    file(REAL_PATH "${CMAKE_COMMON}" CMAKE_COMMON)
+    message("Set CMAKE_COMMON: ${CMAKE_COMMON}")
 endif()
 if(NOT DEFINED PLPLOT_FOUND)
     include("${CMAKE_COMMON}/plplot_install.cmake")
 endif()
+
+# The subdirectories are the libraries that are built
+# The .so [or .dylib if on mac] files are copied to the lib directory within the wheel
+
+# e.g.
+# trm_py*.whl/
+# ├── include/
+# │   └── *.h
+# ├── lib/
+# │   ├── cmake/
+# │   ├── libbinary.so
+# │   ├── libroche.so
+# │   ├── libsubs.so
+# │   └── libtrm-mem.so
+# ├── trm_py/
+# ├── trm_py-*.dist-info/
 
 # These must be in order to build the subdirectories
 # roche -> binary -> subs
@@ -24,6 +42,7 @@ add_subdirectory(src/cpp-subs)
 add_subdirectory(src/cpp-binary)
 add_subdirectory(src/cpp-roche)
 add_subdirectory(src/cpp-mem)
+
 
 
 # Find the module development requirements
@@ -93,11 +112,7 @@ target_include_directories(_cpp_doppler
         $<INSTALL_INTERFACE:include>
 )
 
-# Set RPATH for macOS and Linux
-set(CMAKE_INSTALL_RPATH "$ORIGIN")
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
-# set RPATH to PROJECT_SOURCE_DIR/install/lib and PROJECT_SOURCE_DIR/install/include
 set_target_properties(_cpp_subs _cpp_roche _cpp_doppler PROPERTIES
     INSTALL_RPATH "@loader_path/../../lib"
     BUILD_WITH_INSTALL_RPATH TRUE

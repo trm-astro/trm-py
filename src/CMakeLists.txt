@@ -1,21 +1,19 @@
 # This makes and installs the CPP executables and the shared librarys
 cmake_minimum_required(VERSION 3.23)
-project(py-subs)
+project(trm-cpp)
 
 include(ExternalProject)
 
-message("CMakeLists.txt for py-subs")
-
-set(PACKAGE_NAME pysubs)
-
 # Define CMAKE_COMMON if not already defined
-
 if(NOT DEFINED CMAKE_COMMON)
     set(CMAKE_COMMON ${PROJECT_SOURCE_DIR}/../cmake_common)
 endif()
 if(NOT DEFINED PLPLOT_FOUND)
     include("${CMAKE_COMMON}/plplot_install.cmake")
 endif()
+# This is a common library install script for subs, binary, colly, roche and lcurve
+# The include brings in a function to install the libraries
+include("${CMAKE_COMMON}/install_lib.cmake") 
 
 add_subdirectory(cpp-subs)
 add_subdirectory(cpp-binary)
@@ -23,12 +21,17 @@ add_subdirectory(cpp-colly)
 add_subdirectory(cpp-roche)
 add_subdirectory(cpp-lcurve)
 
-#for each subdirectory we need to now install to /usr/local/lib
+
+# Use a common cmake script to intall the above to the system
+
+foreach(DEP cpp-subs cpp-binary cpp-colly cpp-roche cpp-lcurve)
+    
+endforeach()
 
 
+# ############################################################
 # Define sources
-
-set(SOURCES test.cxx)
+set(SOURCES test/test.cxx)
 
 # Define the library
 add_library(${PACKAGE_NAME} SHARED ${SOURCES})
@@ -46,14 +49,6 @@ target_link_libraries(${PACKAGE_NAME}
         colly
         lcurve
 )
-
-# Set RPATH properties
-# set_target_properties(${PACKAGE_NAME} PROPERTIES
-#     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-#     BUILD_WITH_INSTALL_RPATH TRUE
-#     INSTALL_RPATH_USE_LINK_PATH TRUE
-#     BUILD_RPATH_USE_ORIGIN TRUE
-# )
 
 # Make the lcurve executable
 add_executable(lprofile cpp-lcurve/src/lprofile.cc)

@@ -25,7 +25,7 @@ options = []
 settings = []
 config = []
 generator = "Ninja"
-output-folder = "build"
+output_folder = "build"
 
 [[tool.scikit-build-core-conan.overrides]]
 if.platform-system = "linux"
@@ -46,16 +46,6 @@ args = [
     "-DCMAKE_TOOLCHAIN_FILE={source_dir}/build/Release/generators/conan_toolchain.cmake",
     "-DPLPLOT_BUILD_TYPE=4",
     "-DPYTHON_SITE_PACKAGES={python_site_dir}",
-]
-
-[tool.scikit-build.sdist]
-include = [
-    "trm_py/*.so",  # For Unix-like systems
-    "trm_py/*.dll", # For Windows
-    "trm_py/*.dylib", # For macOS
-    "build/Release/generators/*.dylib", # Include Conan-installed libraries for macOS
-    "build/Release/generators/*.so",    # Include Conan-installed libraries for Linux
-    "build/Release/generators/*.dll"   # Include Conan-installed libraries for Windows
 ]
 
 [tool.cibuildwheel]
