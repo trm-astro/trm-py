@@ -22,6 +22,7 @@ endif()
 
 # The subdirectories are the libraries that are built
 # The .so [or .dylib if on mac] files are copied to the lib directory within the wheel
+# in trm_py the .so directory is populated with libraries from the wheel fix
 
 # e.g.
 # trm_py*.whl/
@@ -34,6 +35,12 @@ endif()
 # │   ├── libsubs.so
 # │   └── libtrm-mem.so
 # ├── trm_py/
+# │   ├── _cpp/
+# │   ├── .so/
+# │   ├── libbinary.so
+# │   ├── libroche.so
+# │   ├── libsubs.so
+# │   └── libtrm-mem.so 
 # ├── trm_py-*.dist-info/
 
 # These must be in order to build the subdirectories

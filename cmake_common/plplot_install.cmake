@@ -91,39 +91,60 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
     elseif(UNIX)
         message("PLPLOT_BUILD_TYPE: apt")
 
-        # Use find_library to find the library
-        find_library(PLPLOT_LIB
-            NAMES ${PLPLOT_LIB_NAME}
-            REQUIRED
+        # Clear previous values
+        unset(PLPLOT_INCLUDE_DIRS CACHE)
+        unset(PLPLOT_LIBRARIES CACHE)
+        
+        message(STATUS "Attempting to locate system-installed PLplot...")
+        
+        # Common candidates
+        set(POSSIBLE_INCLUDE_DIRS
+            /usr/include
+            /usr/local/include
+            /opt/homebrew/include      # Apple Silicon Homebrew
+            /usr/local/opt/plplot/include
         )
-        if(NOT PLPLOT_LIB)
-            message(FATAL_ERROR "Library ${PLPLOT_LIB_NAME} not found")
+        
+        set(POSSIBLE_LIBRARY_DIRS
+            /usr/lib
+            /usr/local/lib
+            /opt/homebrew/lib
+            /usr/local/opt/plplot/lib
+        )
+        
+        # Allow user override
+        if(DEFINED ENV{PLPLOT_ROOT})
+            list(APPEND POSSIBLE_INCLUDE_DIRS "$ENV{PLPLOT_ROOT}/include")
+            list(APPEND POSSIBLE_LIBRARY_DIRS "$ENV{PLPLOT_ROOT}/lib")
         endif()
-
-        message("PLPLOT_LIB: ${PLPLOT_LIB}")
-
-        # use dpkg to get location of plplot
-        execute_process(
-            COMMAND "dpkg-query -L libplplot-dev"
-            OUTPUT_VARIABLE PLPLOT_FILES
+        
+        find_path(PLPLOT_INCLUDE_DIR
+            NAMES plplot.h
+            PATHS ${POSSIBLE_INCLUDE_DIRS}
+            DOC "PLplot include directory"
         )
-        message("dpkg found: PLPLOT_FILES: ${PLPLOT_FILES}")
-        string(FIND "${PLPLOT_FILES}" "${PLPLOT_LIB_NAME}" PLPLOT_FOUND_INDEX)
-        if(PLPLOT_FOUND_INDEX EQUAL -1)
-            message(FATAL_ERROR "Library ${PLPLOT_LIB_NAME} not found in dpkg-query output")
+        
+        find_library(PLPLOT_LIBRARY
+            NAMES plplotd plplot
+            PATHS ${POSSIBLE_LIBRARY_DIRS}
+            DOC "PLplot library"
+        )
+        
+        if(PLPLOT_INCLUDE_DIR AND PLPLOT_LIBRARY)
+            message(STATUS "Found PLplot include dir: ${PLPLOT_INCLUDE_DIR}")
+            message(STATUS "Found PLplot library: ${PLPLOT_LIBRARY}")
+        
+            set(PLPLOT_INCLUDE_DIRS ${PLPLOT_INCLUDE_DIR} CACHE PATH "Path to PLplot includes")
+            set(PLPLOT_LIBRARIES ${PLPLOT_LIBRARY} CACHE FILEPATH "Path to PLplot library")
+        
+            mark_as_advanced(PLPLOT_INCLUDE_DIRS PLPLOT_LIBRARIES)
         else()
-            string(REGEX MATCH "${PLPLOT_LIB_NAME}" PLPLOT_FULL_PATH "${PLPLOT_FILES}")
-            message("PLPLOT_FULL_PATH: ${PLPLOT_FULL_PATH}")
+            message(FATAL_ERROR "PLplot not found. Please install it using your system's package manager.")
         endif()
-
-
-        # execute_process(
-        #     COMMAND dpkg-query -L libplplot-dev | grep "${PLPLOT_LIB_NAME}"
-        #     OUTPUT_VARIABLE PLPLOT_FULL_PATH
-        # )
-        # message("dpkg found: PLPLOT_FULL_PATH: ${PLPLOT_FULL_PATH}")
-        cmake_path(REMOVE_FILENAME "${PLPLOT_FULL_PATH}" OUTPUT_VARIABLE PLPLOT_LIB_PATH)
-        message("cmake resolved parent as: PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
+        
+        
+        # cmake_path(REMOVE_FILENAME "${PLPLOT_FULL_PATH}" OUTPUT_VARIABLE PLPLOT_LIB_PATH)
+        # message("cmake resolved parent as: PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
     elseif(WIN32)
         message("PLPLOT_BUILD_TYPE: vcpkg")
         # Set PLplot paths using vcpkg's default install location
