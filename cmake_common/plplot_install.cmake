@@ -90,6 +90,18 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         set(PLPLOT_LIB_PATH /opt/homebrew/opt/plplot)
     elseif(UNIX)
         message("PLPLOT_BUILD_TYPE: apt")
+
+        # Use find_library to find the library
+        find_library(PLPLOT_LIB
+            NAMES ${PLPLOT_LIB_NAME}
+            REQUIRED
+        )
+        if(NOT PLPLOT_LIB)
+            message(FATAL_ERROR "Library ${PLPLOT_LIB_NAME} not found")
+        endif()
+
+        message("PLPLOT_LIB: ${PLPLOT_LIB}")
+
         # use dpkg to get location of plplot
         execute_process(
             COMMAND "dpkg-query -L libplplot-dev"
