@@ -100,14 +100,9 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         set(PLPLOT_LIB_DIR ${PLPLOT_LIB_PATH}/lib)
         set(PLPLOT_INCLUDE_DIR ${PLPLOT_LIB_PATH}/include/plplot)
     elseif(UNIX)
-        message("PLPLOT_BUILD_TYPE: yum") # yum is default for the manylinux platform used by cibw
-        file(GLOB PLPLOT_DEBUG_LIBS "/usr/lib64/libplplot*")
-        message(STATUS "Contents of /usr/lib64:")
-        foreach(lib_file IN LISTS PLPLOT_DEBUG_LIBS)
-            message(STATUS "  - ${lib_file}")
-        endforeach()
+        message("PLPLOT_BUILD_TYPE: yum or apt") # yum is default for the manylinux platform used by cibw
         find_library(PLPLOT_LIB
-            NAMES plplotcxxd
+            NAMES ${PLPLOT_LIB_NAME}
             HINTS /usr/lib64 /usr/lib /usr/local/lib /lib
             REQUIRED
         )
