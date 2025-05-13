@@ -23,7 +23,7 @@ if (NOT DEFINED PLPLOT_LIB_NAME)
     if (WIN32)
         set(PLPLOT_LIB_NAME libplplotcxx.dll) 
     elseif (UNIX)
-        set(PLPLOT_LIB_NAME libplplotcxd.so) 
+        set(PLPLOT_LIB_NAME libplplotcxxd.so) 
     elseif (APPLE)
         set(PLPLOT_LIB_NAME libplplotcxx.dylib) # works on mac
     endif()
