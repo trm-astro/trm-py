@@ -26,7 +26,15 @@ if (NOT DEFINED PLPLOT_LIB_NAME)
         set(PLPLOT_LIB_NAME libplplotcxx.dylib) # works on mac
     elseif (UNIX)
         # TODO, do we need to make this switch betwween libplplotcxx.so and libplplotcxxd.so?
-        set(PLPLOT_LIB_NAME libplplotcxxd.so) 
+        if(EXISTS "/etc/debian_version")
+            set(IS_DEBIAN_BASED TRUE)
+                set(PLPLOT_LIB_NAME libplplotcxx.so)
+            elseif(EXISTS "/etc/redhat-release")
+                set(PLPLOT_LIB_NAME libplplotcxxd.so) 
+            else()
+                message(WARNING "Could not determine Linux distribution")
+            endif()
+        
     endif()
 endif()
 
