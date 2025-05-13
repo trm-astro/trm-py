@@ -8,6 +8,12 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.9"
 
+[project.scripts]
+eplanner = "trm_py.observing.scripts.eplanner:eplanner"
+ltphaseii = "trm_py.observing.scripts.ltphaseii:ltphaseii"
+parallactic = "trm_py.observing.scripts.parallactic:parallactic"
+
+
 [build-system]
 requires = [
     "scikit-build-core>=0.5.0",
