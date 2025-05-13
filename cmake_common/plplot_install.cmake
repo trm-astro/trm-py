@@ -89,6 +89,8 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         message("PLPLOT_BUILD_TYPE: Brew")
         # Set PLplot paths using Homebrew's default install location
         set(PLPLOT_LIB_PATH /opt/homebrew/opt/plplot)
+        set(PLPLOT_LIB_DIR ${PLPLOT_LIB_PATH}/lib)
+        set(PLPLOT_INCLUDE_DIR ${PLPLOT_LIB_PATH}/include/plplot)
     elseif(UNIX)
         message("PLPLOT_BUILD_TYPE: yum") # yum is default for the manylinux platform used by cibw
         file(GLOB PLPLOT_DEBUG_LIBS "/usr/lib64/libplplot*")
@@ -101,8 +103,14 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
             HINTS /usr/lib64 /usr/lib /usr/local/lib /lib
             REQUIRED
         )
+        find_path(PLPLOT_INCLUDE_DIR
+            NAMES plplot.h
+            HINTS /usr/include /usr/local/include
+            PATH_SUFFIXES plplot
+            REQUIRED
+        )
         # Extract the directory path
-        get_filename_component(PLPLOT_LIB_PATH "${PLPLOT_LIB}" DIRECTORY)
+        get_filename_component(PLPLOT_LIB_DIR "${PLPLOT_LIB}" DIRECTORY)
         message(STATUS "PLplot library path: ${PLPLOT_LIB_PATH}")
 
         # Extract the file name (libplplot.so)
@@ -122,13 +130,7 @@ endif()
 if(NOT DEFINED PLPLOT_LIB_PATH)
     message(FATAL_ERROR "PLPLOT_LIB_PATH undefined")
 else()
-    message("pre-resolve PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
-    file(REAL_PATH "${PLPLOT_LIB_PATH}" PLPLOT_LIB_PATH)
-    # is this include correct?
-    set(PLPLOT_INCLUDE_DIR ${PLPLOT_LIB_PATH}/include/plplot)
-    set(PLPLOT_LIB_DIR ${PLPLOT_LIB_PATH})
-    file(REAL_PATH "${PLPLOT_LIB_DIR}/${PLPLOT_LIB_NAME}" PLPLOT_LIB)
-    set(PLPLOT_FOUND TRUE)
+    message("PLPLOT_LIB_NAME: ${PLPLOT_LIB_NAME}")
     message("PLPLOT_INCLUDE_DIR: ${PLPLOT_INCLUDE_DIR}")
     message("PLPLOT_LIB_DIR: ${PLPLOT_LIB_DIR}")
     message("PLPLOT_LIB: ${PLPLOT_LIB}")
