@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 #include "py_subs.h"
 #include "py_roche.h"
 #include "trm/subs.h"
@@ -273,9 +274,15 @@ void init_roche(py::module_ &m) {
             }
             float* x= new float[n];
             float* y= new float[n];
+            // std::vector<float> x(n);
+            // std::vector<float> y(n);
 
             Roche::lobe1(q, x, y, n);
-            return std::make_tuple(x, y);
+
+            // Convert to py::array
+            py::array_t<float> x_arr(n, x);
+            py::array_t<float> y_arr(n, y);
+            return std::make_tuple(x_arr, y_arr);
         },
         "lobe1(q, n=200), returns tuple of x, y arrays representing the primary star's Roche lobe",
         py::arg("q"), py::arg("n") = 200
@@ -294,7 +301,10 @@ void init_roche(py::module_ &m) {
             float* y= new float[n];
 
             Roche::lobe2(q, x, y, n);
-            return std::make_tuple(x, y);
+            // Convert to py::array
+            py::array_t<float> x_arr(n, x);
+            py::array_t<float> y_arr(n, y);
+            return std::make_tuple(x_arr, y_arr);
         },
         "lobe2(q, n=200), returns tuple of x, y arrays representing the secondary star's Roche lobe",
         py::arg("q"), py::arg("n") = 200
@@ -427,7 +437,10 @@ void init_roche(py::module_ &m) {
             float* x= new float[n];
             float* y= new float[n];
             Roche::streamr(q, rad, x, y, n);
-            return std::make_tuple(x, y);
+            // Convert to py::array
+            py::array_t<float> x_arr(n, x);
+            py::array_t<float> y_arr(n, y);
+            return std::make_tuple(x_arr, y_arr);
         },
         "streamr(q, rad, n=200), returns tuple of x, y arrays representing the gas stream. q=M2/M1, rad=minimum radius to aim for",
         py::arg("q"), py::arg("rad"), py::arg("n") = 200
@@ -448,7 +461,10 @@ void init_roche(py::module_ &m) {
             float* x= new float[n];
             float* y= new float[n];
             Roche::stream(q, step, x, y, n);
-            return std::make_tuple(x, y);
+            // Convert to py::array
+            py::array_t<float> x_arr(n, x);
+            py::array_t<float> y_arr(n, y);
+            return std::make_tuple(x_arr, y_arr);
         },
         "x,y = stream(q, step, n=200), returns arrays of the gas stream. q = M2/M1, step=distance between adjacent points.",
         py::arg("q"), py::arg("rad"), py::arg("n") = 200
@@ -484,7 +500,10 @@ void init_roche(py::module_ &m) {
             if(smax>1.0e-3){
                 smax=1.0e-3;
             }
-            return std::make_tuple(x, y);
+            // Convert to py::array
+            py::array_t<float> x_arr(n, x);
+            py::array_t<float> y_arr(n, y);
+            return std::make_tuple(x_arr, y_arr);
         },
         "x,y = astream(q, type, r0, v0, step, n, acc), returns arrays of the gas stream. q = M2/M1, type=0,1,2,3 for primary, secondary, L1, L2, r0=initial position, v0=initial velocity, step=distance between adjacent points, n=number of points, acc=accuracy",
         py::arg("q"), py::arg("type"), py::arg("r0"), py::arg("v0"), py::arg("step"), py::arg("n") = 200, py::arg("acc") = 1.0e-9
@@ -528,7 +547,10 @@ void init_roche(py::module_ &m) {
             float* x= new float[n];
             float* y= new float[n];
             Roche::vlobe1(q, x, y, n);
-            return std::make_tuple(x, y);
+            // Convert to py::array
+            py::array_t<float> x_arr(n, x);
+            py::array_t<float> y_arr(n, y);
+            return std::make_tuple(x_arr, y_arr);
         },
         "vlobe1(q, n=200), q=M2/M1 returns tuple of x, y arrays representing the primary star's Roche lobe",
         py::arg("q"), py::arg("n") = 200
@@ -546,7 +568,10 @@ void init_roche(py::module_ &m) {
             float* x= new float[n];
             float* y= new float[n];
             Roche::vlobe2(q, x, y, n);
-            return std::make_tuple(x, y);
+            // Convert to py::array
+            py::array_t<float> x_arr(n, x);
+            py::array_t<float> y_arr(n, y);
+            return std::make_tuple(x_arr, y_arr);
         },
         "vlobe2(q, n=200), q=M2/M1 returns tuple of x, y arrays representing the secondary star's Roche lobe",
         py::arg("q"), py::arg("n") = 200
@@ -570,8 +595,11 @@ void init_roche(py::module_ &m) {
             float* vx= new float[n];
             float* vy= new float[n];
 
-            Roche::vstrreg(q, step, vx, vy, vtype, n);
-            return std::make_tuple(vx, vy);
+            Roche::vstrreg(q, step, vx, vy, n, vtype);
+            // Convert to py::array
+            py::array_t<float> x_arr(n, vx);
+            py::array_t<float> y_arr(n, vy);
+            return std::make_tuple(x_arr, y_arr);
         },
         "vx, vy = vstream(q, step=0.01, vtype=1, n=60), returns arrays of postions of the gas stream in velocity space. q=M2/M1, step is measured as a fraction of the distance to the inner Lagrangian point from the primary star., vtype=1 is the straight velocity of the gas stream while vtype=2 is the velocity of the disc along the stream, n=number of points in output",
         py::arg("q"), py::arg("step") = 0.01, py::arg("vtype") = 1, py::arg("n") = 60
@@ -682,7 +710,16 @@ void init_roche(py::module_ &m) {
                 v = vm;
                 decr = !decr;
             }
-            return std::make_tuple(x, y, vx, vy, t_arr, jc_arr);
+            // Convert to py::array
+            py::array_t<float> x_arr(n, x);
+            py::array_t<float> y_arr(n, y);
+            py::array_t<float> vx_arr(n, vx);
+            py::array_t<float> vy_arr(n, vy);
+            // Convert to py::array
+            py::array_t<float> t_arr_py(n, x);
+            py::array_t<float> jc_arr_py(n, y);
+
+            return std::make_tuple(x_arr, y_arr, vx_arr, vy_arr, t_arr_py, jc_arr_py);
         },
         "x, y, vx, vy, t, jac = pvstream(q, step=0.01, type=1, n=60), Returns arrays of positions, velocities, time, and jacobi constant along the gas stream",
         py::arg("q"), py::arg("step") = 0.01, py::arg("vtype")=1, py::arg("n")=60
