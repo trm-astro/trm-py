@@ -561,7 +561,7 @@ void init_roche(py::module_ &m) {
             if(step < 0. || step > 1.){
                 throw std::runtime_error("roche.vstream: step < 0 or step > 1");
             }
-            if(vtype != 1 || vtype != 2){
+            if(!(vtype == 1 || vtype == 2)){
                 throw std::runtime_error("roche.vstream: vtype not 1 or 2");
             }
             if(n < 2){
@@ -586,7 +586,7 @@ void init_roche(py::module_ &m) {
             if(step < 0. || step > 1.){
                 throw std::runtime_error("roche.pvstream: step < 0 or step > 1");
             }
-            if(vtype != 1 || vtype != 2){
+            if(!(vtype == 1 || vtype == 2)){
                 throw std::runtime_error("roche.pvstream: vtype not 1 or 2");
             }
             if(n < 2){
