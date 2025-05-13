@@ -22,11 +22,11 @@ endif()
 if (NOT DEFINED PLPLOT_LIB_NAME)
     if (WIN32)
         set(PLPLOT_LIB_NAME libplplotcxx.dll) 
+    elseif (APPLE)
+        set(PLPLOT_LIB_NAME libplplotcxx.dylib) # works on mac
     elseif (UNIX)
         # TODO, do we need to make this switch betwween libplplotcxx.so and libplplotcxxd.so?
         set(PLPLOT_LIB_NAME libplplotcxxd.so) 
-    elseif (APPLE)
-        set(PLPLOT_LIB_NAME libplplotcxx.dylib) # works on mac
     endif()
 endif()
 
@@ -127,8 +127,8 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
     endif()
 endif()
 
-if(NOT DEFINED PLPLOT_LIB_PATH)
-    message(FATAL_ERROR "PLPLOT_LIB_PATH undefined")
+if(NOT DEFINED PLPLOT_LIB_DIR)
+    message(FATAL_ERROR "PLPLOT_LIB_DIR undefined")
 else()
     message("PLPLOT_LIB_NAME: ${PLPLOT_LIB_NAME}")
     message("PLPLOT_INCLUDE_DIR: ${PLPLOT_INCLUDE_DIR}")
