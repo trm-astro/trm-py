@@ -23,6 +23,7 @@ if (NOT DEFINED PLPLOT_LIB_NAME)
     if (WIN32)
         set(PLPLOT_LIB_NAME libplplotcxx.dll) 
     elseif (UNIX)
+        # TODO, do we need to make this switch betwween libplplotcxx.so and libplplotcxxd.so?
         set(PLPLOT_LIB_NAME libplplotcxxd.so) 
     elseif (APPLE)
         set(PLPLOT_LIB_NAME libplplotcxx.dylib) # works on mac
@@ -123,8 +124,9 @@ if(NOT DEFINED PLPLOT_LIB_PATH)
 else()
     message("pre-resolve PLPLOT_LIB_PATH: ${PLPLOT_LIB_PATH}")
     file(REAL_PATH "${PLPLOT_LIB_PATH}" PLPLOT_LIB_PATH)
+    # is this include correct?
     set(PLPLOT_INCLUDE_DIR ${PLPLOT_LIB_PATH}/include/plplot)
-    set(PLPLOT_LIB_DIR ${PLPLOT_LIB_PATH}/lib)
+    set(PLPLOT_LIB_DIR ${PLPLOT_LIB_PATH})
     file(REAL_PATH "${PLPLOT_LIB_DIR}/${PLPLOT_LIB_NAME}" PLPLOT_LIB)
     set(PLPLOT_FOUND TRUE)
     message("PLPLOT_INCLUDE_DIR: ${PLPLOT_INCLUDE_DIR}")
