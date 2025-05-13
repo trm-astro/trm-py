@@ -25,7 +25,7 @@ jobs:
         - uses: pypa/cibuildwheel@v2.23.3
           env:
             CIBW_BEFORE_BUILD_LINUX: |
-              yum install -y libplplot-dev libplplotcxx15
+              yum install -y libplplot-devel libplplotcxx15
             CIBW_BEFORE_BUILD_MACOS: |
               brew install plplot
             CIBW_BEFORE_BUILD_WINDOWS: |
