@@ -89,15 +89,15 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
         # Set PLplot paths using Homebrew's default install location
         set(PLPLOT_LIB_PATH /opt/homebrew/opt/plplot)
     elseif(UNIX)
-        message("PLPLOT_BUILD_TYPE: apt")
-        file(GLOB PLPLOT_DEBUG_LIBS "/usr/lib/x86_64-linux-gnu/")
-        message(STATUS "Contents of /usr/lib/x86_64-linux-gnu/:")
+        message("PLPLOT_BUILD_TYPE: yum") # yum is default for the manylinux platform used by cibw
+        file(GLOB PLPLOT_DEBUG_LIBS "/usr/lib64/libplplot*")
+        message(STATUS "Contents of /usr/lib64:")
         foreach(lib_file IN LISTS PLPLOT_DEBUG_LIBS)
             message(STATUS "  - ${lib_file}")
         endforeach()
         find_library(PLPLOT_LIB
             NAMES plplotcxx
-            HINTS /usr/lib /usr/local/lib /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu /lib/x86_64-linux-gnu/ /lib/aarch64-linux-gnu/ 
+            HINTS /usr/lib64 /usr/lib /usr/local/lib /lib
             REQUIRED
         )
         # Extract the directory path
