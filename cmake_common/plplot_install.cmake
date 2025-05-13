@@ -23,7 +23,7 @@ if (NOT DEFINED PLPLOT_LIB_NAME)
     if (WIN32)
         set(PLPLOT_LIB_NAME libplplotcxx.dll) 
     elseif (UNIX)
-        set(PLPLOT_LIB_NAME libplplotcxx.so) 
+        set(PLPLOT_LIB_NAME libplplotcxd.so) 
     elseif (APPLE)
         set(PLPLOT_LIB_NAME libplplotcxx.dylib) # works on mac
     endif()
@@ -96,7 +96,7 @@ elseif(PLPLOT_BUILD_TYPE EQUAL 4) # PkgManager build of PLPLOT
             message(STATUS "  - ${lib_file}")
         endforeach()
         find_library(PLPLOT_LIB
-            NAMES plplotcxx
+            NAMES plplotcxxd
             HINTS /usr/lib64 /usr/lib /usr/local/lib /lib
             REQUIRED
         )
