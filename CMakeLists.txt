@@ -119,9 +119,18 @@ target_include_directories(_cpp_doppler
         $<INSTALL_INTERFACE:include>
 )
 
+# Determine platform-specific loader path
+if(APPLE)
+    set(LOADER_PATH "@loader_path/../../lib")
+elseif(UNIX)
+    set(LOADER_PATH "$ORIGIN/../../lib")
+else()
+    set(LOADER_PATH "")  # Windows or unsupported platform
+endif()
 
+# Apply properties to targets
 set_target_properties(_cpp_subs _cpp_roche _cpp_doppler PROPERTIES
-    INSTALL_RPATH "@loader_path/../../lib"
+    INSTALL_RPATH "${LOADER_PATH}"
     BUILD_WITH_INSTALL_RPATH TRUE
     INSTALL_RPATH_USE_LINK_PATH TRUE
     BUILD_RPATH_USE_ORIGIN TRUE
