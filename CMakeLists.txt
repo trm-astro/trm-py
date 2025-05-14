@@ -20,6 +20,16 @@ if(NOT DEFINED PLPLOT_FOUND)
     include("${CMAKE_COMMON}/plplot_install.cmake")
 endif()
 
+# Determine platform-specific loader path for shared libraries
+if(APPLE)
+    set(LOADER_PATH "@loader_path/../../lib")
+elseif(UNIX)
+    set(LOADER_PATH "$ORIGIN/../../lib")
+else()
+    set(LOADER_PATH "")  # Windows or unsupported platform
+endif()
+message("LOADER_PATH set: ${LOADER_PATH}\n")
+
 # The subdirectories are the libraries that are built
 # The .so [or .dylib if on mac] files are copied to the lib directory within the wheel
 # in trm_py the .so directory is populated with libraries from the wheel fix
@@ -36,21 +46,27 @@ endif()
 # │   └── libtrm-mem.so
 # ├── trm_py/
 # │   ├── _cpp/
-# │   ├── .so/
-# │   ├── libbinary.so
-# │   ├── libroche.so
-# │   ├── libsubs.so
-# │   └── libtrm-mem.so 
+# │   │   ├── _cpp_subs.so
+# │   │   ├── _cpp_roche.so
+# │   │   └── _cpp_doppler.so
+# │   ├── __init__.py
+# │   └── .so/
+# │       └── <systemlibs>.so (from the wheel fix)
 # ├── trm_py-*.dist-info/
 
 # These must be in order to build the subdirectories
 # roche -> binary -> subs
-add_subdirectory(src/cpp-subs)
-add_subdirectory(src/cpp-binary)
-add_subdirectory(src/cpp-roche)
-add_subdirectory(src/cpp-mem)
+# add_subdirectory(src/cpp-subs)
+# add_subdirectory(src/cpp-binary)
+# add_subdirectory(src/cpp-roche)
+# add_subdirectory(src/cpp-mem)
+# add_subdirectory(src/cpp-colly)
+# add_subdirectory(src/cpp-lcurve)
 
-
+# This includes the subdirectories as above and builds some lcurve executables
+message("Adding subdirectories")
+include(src/CMakeLists.txt)
+message("Subdirectories added\n")
 
 # Find the module development requirements
 set(PYBIND11_FINDPYTHON ON)
@@ -77,7 +93,7 @@ file(GLOB DOPPLER_SOURCES
     src/py_doppler.h
 )
 
-# Target the CPP code
+# Target the CPP pybind code
 pybind11_add_module(_cpp_subs ${SUBS_SOURCES})
 target_link_libraries(_cpp_subs 
     PUBLIC
@@ -119,15 +135,6 @@ target_include_directories(_cpp_doppler
         $<INSTALL_INTERFACE:include>
 )
 
-# Determine platform-specific loader path
-if(APPLE)
-    set(LOADER_PATH "@loader_path/../../lib")
-elseif(UNIX)
-    set(LOADER_PATH "$ORIGIN/../../lib")
-else()
-    set(LOADER_PATH "")  # Windows or unsupported platform
-endif()
-
 # Apply properties to targets
 set_target_properties(_cpp_subs _cpp_roche _cpp_doppler PROPERTIES
     INSTALL_RPATH "${LOADER_PATH}"
@@ -135,7 +142,6 @@ set_target_properties(_cpp_subs _cpp_roche _cpp_doppler PROPERTIES
     INSTALL_RPATH_USE_LINK_PATH TRUE
     BUILD_RPATH_USE_ORIGIN TRUE
 )
-
 
 install(TARGETS _cpp_subs _cpp_roche _cpp_doppler 
     LIBRARY DESTINATION trm_py/_cpp/

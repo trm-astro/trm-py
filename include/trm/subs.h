@@ -2180,7 +2180,7 @@ namespace Subs {
 	s.read((char*)&npixel, sizeof(int));
 	if(!s) return;
 	if(swap_bytes) npixel = Subs::byte_swap(npixel);
-	s.ignore(sizeof(X[npixel]));
+	s.ignore(npixel*sizeof(X));
     }
 
     /* Loads data into a Buffer1D from an ASCII file with one
