@@ -12,6 +12,14 @@ requires-python = ">=3.9"
 eplanner = "trm_py.observing.scripts.eplanner:eplanner"
 ltphaseii = "trm_py.observing.scripts.ltphaseii:ltphaseii"
 parallactic = "trm_py.observing.scripts.parallactic:parallactic"
+levmarq = "trm_py.lcurve.scripts:levmarq"
+lprofile = "trm_py.lcurve.scripts:lprofile"
+lroche = "trm_py.lcurve.scripts:lroche"
+lroches = "trm_py.lcurve.scripts:lroches"
+picture = "trm_py.lcurve.scripts:picture"
+rotprof = "trm_py.lcurve.scripts:rotprof"
+simplex = "trm_py.lcurve.scripts:simplex"
+visualise = "trm_py.lcurve.scripts:visualise"
 
 
 [build-system]
