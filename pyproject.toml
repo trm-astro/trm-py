@@ -63,7 +63,12 @@ args = [
 ]
 
 [tool.cibuildwheel]
-environment = {CXXFLAGS="-std=c++17", CPPFLAGS="-std=c++17", MACOSX_DEPLOYMENT_TARGET="15.0", CC="clang", CXX="clang++"}
+environment = {
+    CXXFLAGS="-std=c++17", 
+    CPPFLAGS="-std=c++17", 
+    MACOSX_DEPLOYMENT_TARGET="15.0",
+    CIBW_BUILD="cp3*",
+    }#, CC="clang", CXX="clang++"}
 
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
