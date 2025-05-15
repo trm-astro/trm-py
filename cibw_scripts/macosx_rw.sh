@@ -1,7 +1,5 @@
 #! /bin/bash
 
-
-
 #! define the cibw repair wheel script for macosx
 # Relink the broken conan packages
 PCRE_ID=$(conan list 'pcre2/10.44:*' --format=json | jq -r '.[]."pcre2/10.44".revisions[].packages | keys[0]')
@@ -11,4 +9,4 @@ if ! otool -l $PCRE_LIB/lib/libpcre2-posix.3.0.5.dylib | grep -A2 LC_RPATH | gre
 fi
 
 # Repair the wheel
-delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
+delocate-wheel --require-archs "$1" -w "$2" -v "$3"

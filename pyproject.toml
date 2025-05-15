@@ -76,6 +76,6 @@ before-build = [
     "bash cibw_scripts/macosx_bb.sh",
     ]
 repair-wheel-command = [
-    "bash cibw_scripts/macosx_rw.sh",
+    "bash cibw_scripts/macosx_rw.sh {delocate_arch} {dest_dir} {wheel}",
     ]
 
