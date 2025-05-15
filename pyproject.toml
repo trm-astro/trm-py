@@ -7,12 +7,12 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.9"
-
-[project.dependencies]
-astropy = ">=6.1.7"
-numpy = ">=1.24.3"
-scipy = ">=1.10.1"
-matplotlib = ">=3.7.1"
+dependencies = [
+    "astropy>=6.1.7",
+    "numpy>=1.24.3",
+    "scipy>=1.10.1",
+    "matplotlib>=3.7.1",
+]
 
 [project.scripts]
 eplanner = "trm_py.observing.scripts.eplanner:eplanner"
@@ -77,6 +77,12 @@ before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.linux]
+before-build = [
+    "bash cibw_scripts/linux_bb.sh",
+    ]
+repair-wheel-command = [
+    "bash cibw_scripts/linux_rw.sh {dest_dir} {wheel}",
+]
 
 [tool.cibuildwheel.macos]
 before-build = [

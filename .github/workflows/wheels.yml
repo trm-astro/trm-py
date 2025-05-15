@@ -25,9 +25,6 @@ jobs:
       
         - uses: pypa/cibuildwheel@v2.23.3
           env:
-            CIBW_BEFORE_BUILD_LINUX: |
-              yum makecache
-              yum install -y plplot-devel plplot-libs
             CIBW_BEFORE_BUILD_WINDOWS: |
               vcpkg install plplot
           with:
