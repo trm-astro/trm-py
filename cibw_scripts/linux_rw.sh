@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+yum install -y jq
 
 # Define the Conan package info for PCRE2
 PCRE_ID=$(conan list 'pcre2/10.44:*' --format=json | jq -r '.[]."pcre2/10.44".revisions[].packages | keys[0]')
