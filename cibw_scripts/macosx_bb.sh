@@ -6,3 +6,4 @@
 
 brew install plplot
 
+pip install conan
