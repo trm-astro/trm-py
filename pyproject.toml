@@ -8,6 +8,12 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.9"
 
+[project.dependencies]
+astropy = ">=6.1.7"
+numpy = ">=1.24.3"
+scipy = ">=1.10.1"
+matplotlib = ">=3.7.1"
+
 [project.scripts]
 eplanner = "trm_py.observing.scripts.eplanner:eplanner"
 ltphaseii = "trm_py.observing.scripts.ltphaseii:ltphaseii"

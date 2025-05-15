@@ -8,9 +8,9 @@ a routine specific to the Thai telescope
 
 import math as m
 import numpy as np
-from astropy import time, coordinates as coord, units as u
-from astropy.coordinates import get_sun, get_moon, EarthLocation, AltAz, SkyCoord
-from astropy.time import TimeISO
+from astropy import time
+from astropy import units as u
+from astropy.coordinates import get_sun, AltAz, SkyCoord
 
 from ..subs.util import Vec3, cross, dot
 

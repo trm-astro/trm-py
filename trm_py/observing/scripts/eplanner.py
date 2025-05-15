@@ -31,7 +31,7 @@ Black dots indicate phase 0 for any targets with
 ephemerides. Similar-sized open circles mark phase 0.5, but only if
 coverage of that phase has been specified.  """
 import argparse
-import datetime
+
 import pathlib
 
 import numpy as np
@@ -40,8 +40,9 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.ticker import MultipleLocator, FuncFormatter
 
-from astropy import time, coordinates as coord, units as u
-from astropy.coordinates import get_sun, get_moon, EarthLocation, AltAz
+from astropy import time
+from astropy import coordinates as coord
+from astropy.coordinates import get_sun, get_body, AltAz
 from astropy.utils import iers
 
 from trm_py import observing
@@ -337,7 +338,7 @@ def eplanner():
     # for the Moon which is added at the top of the plot.
     mjd_mid = time.Time(isun + (utc5+utc6)/48., format='mjd')
 
-    moon = get_moon(mjd_mid, location=site)
+    moon = get_body('moon', mjd_mid, location=site)
     sun = get_sun(mjd_mid)
     elong = sun.separation(moon)
     mphase = np.arctan2(sun.distance*np.sin(elong),
@@ -362,7 +363,7 @@ def eplanner():
 
     # compute altitude of Moon through the night. Add as red dashed line
     # scaled so that 90 = top of plot.
-    moon = get_moon(mjds, location=site)
+    moon = get_body('moon', mjds, location=site)
     altazframe = AltAz(obstime=mjds, location=site)
     altaz = moon.transform_to(altazframe)
     alts = altaz.alt.value
