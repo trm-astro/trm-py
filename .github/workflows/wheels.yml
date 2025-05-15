@@ -27,8 +27,6 @@ jobs:
             CIBW_BEFORE_BUILD_LINUX: |
               yum makecache
               yum install -y plplot-devel plplot-libs
-            CIBW_BEFORE_BUILD_MACOS: |
-              brew install plplot
             CIBW_BEFORE_BUILD_WINDOWS: |
               vcpkg install plplot
           with:
