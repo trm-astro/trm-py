@@ -75,6 +75,7 @@ repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
 before-build = [
     "bash cibw_scripts/macosx_bb.sh",
     ]
-
-
+repair-wheel-command = [
+    "bash cibw_scripts/macosx_rw.sh",
+    ]
 
