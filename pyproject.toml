@@ -63,7 +63,21 @@ args = [
 ]
 
 [tool.cibuildwheel]
-environment = {CXXFLAGS="-std=c++17", CPPFLAGS="-std=c++17"}#, CC="clang", CXX="clang++"}
+environment = {CXXFLAGS="-std=c++17", CPPFLAGS="-std=c++17", MACOSX_DEPLOYMENT_TARGET="15.0", CC="clang", CXX="clang++"}
 
+[tool.cibuildwheel.windows]
+before-build = "pip install delvewheel"
+repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.linux]
+
+[tool.cibuildwheel.macos]
+before-build = [
+    """PCRE_ID=$(conan list 'pcre2/10.44:*' --format=json | jq -r '.[]."pcre2/10.44".revisions[].packages | keys[0]')""",
+    "PCRE_LIB=$(conan cache path pcre2/10.44:$PCRE_ID)",
+    """if ! otool -l $PCRE_LIB/lib/libpcre2-posix.3.0.5.dylib | grep -A2 LC_RPATH | grep -q "@loader_path"; then
+    install_name_tool -add_rpath @loader_path $PCRE_LIB/lib/libpcre2-posix.3.0.5.dylib
+    fi"""
+]
 
 
