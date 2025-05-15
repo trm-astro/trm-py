@@ -10,7 +10,7 @@ pip install conan
 
 # install conan profiles
 conan config install .github/conan-profiles/macos-latest
-conan install . --build=missing
+conan install . --build=missing --profile:build=macos-latest --profile:host=macos-latest
 
 # Relink the broken conan packages
 PCRE_ID=$(conan list 'pcre2/10.44:*' --format=json | jq -r '.[]."pcre2/10.44".revisions[].packages | keys[0]')
