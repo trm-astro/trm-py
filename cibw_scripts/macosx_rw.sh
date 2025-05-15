@@ -9,4 +9,4 @@ if ! otool -l $PCRE_LIB/lib/libpcre2-posix.3.0.5.dylib | grep -A2 LC_RPATH | gre
 fi
 
 # Repair the wheel
-delocate-wheel --require-archs "$1" -w "$2" -v "$3"
+delocate-wheel -w "$1" -v "$2"
