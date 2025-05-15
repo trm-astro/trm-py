@@ -5,6 +5,6 @@
 # This script is run before the build process starts
 
 yum makecache
-yum install -y plplotdevel plplot-libs
+yum install -y plplot-devel plplot-libs
 
 pip install conan
