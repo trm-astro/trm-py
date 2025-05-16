@@ -15,4 +15,5 @@ if ! ldd "$LIB_FILE" | grep -q "$PCRE_LIB/lib"; then
 fi
 
 # Repair the wheel using auditwheel
+auditwheel show "$1"
 auditwheel repair "$2" -w "$1"
