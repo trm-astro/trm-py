@@ -14,6 +14,20 @@ if ! ldd "$LIB_FILE" | grep -q "$PCRE_LIB/lib"; then
     patchelf --set-rpath '$ORIGIN' "$LIB_FILE"
 fi
 
+
+#getting into the weeds
+# find the wheel and extract the library
+tar -xvf "$2"
+# inspect the three c++ extensions found in the wheel
+# check the shared object files
+ls -l $2/$(basename "$2" .whl)/lib/
+ls -l $2/$(basename "$2" .whl)/trm_py/_cpp/
+
+dll $2/$(basename "$2" .whl)/trm_py/_cpp/_cpp_doppler*.so
+dll $2/$(basename "$2" .whl)/trm_py/_cpp/_cpp_roche*.so
+dll $2/$(basename "$2" .whl)/trm_py/_cpp/_cpp_subs*.so
+
+
 # Repair the wheel using auditwheel
 auditwheel show "$2"
 auditwheel repair "$2" -w "$1"
