@@ -17,7 +17,7 @@ fi
 
 #getting into the weeds
 # find the wheel and extract the library
-tar -xvf "$2"
+unzip "$2"
 # inspect the three c++ extensions found in the wheel
 # check the shared object files
 ls -l $2/$(basename "$2" .whl)/lib/
