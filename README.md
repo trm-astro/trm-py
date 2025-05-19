@@ -21,9 +21,35 @@ This code will be installable via `pip install trm-py` from PyPi (and potentiall
 
 Until further notice this is a WIP and should not be considered usable for scientific use.
 
-## Poetry python wheel build
+## Cibuildwheel 
 
-poetry lock
+> Get the main repo
+> `git clone git@github.com:trm-astro/trm-py.git`
+>
+> Then get all the submodules
+> `git submodule update --init --recursive`
+>
+> Install cibuildwheel 
+> `pip3 install cibuildwheel`
+>
+> >If you need to install/start docker
+> >
+> > Install Docker
+> > yum/brew docker (or however you like, note it must be REAL docker not podman )
+> > for ubuntu/debian: `curl -sSL https://get.docker.com/ | sudo sh`
+> >
+> > Start Docker Deamon
+> > sudo systemctl start docker
+> >
+> > Make sure docker works (on my vm, vagrant, I did), ymmv
+> >
+> > sudo groupadd docker
+> > sudo usermod -aG docker $USER
+> > reboot
+> > 
+>
+> cibuildwheel
+
 
 ## CPP-Only build
 
@@ -70,8 +96,7 @@ Conan wont find fttw3
 > We can install from the old remote by adding it
 >
 > 1. `conan remote add old-conan https://center.conan.io`
-> 2. `cd py_subs/src`
-> 3. `conan install . -r old-conan --build=missing`
+> 2. `conan install . -r old-conan --build=missing`
 >
 > Now its built and cached you should have no issues
 

@@ -29,5 +29,6 @@ dll $2/$(basename "$2" .whl)/trm_py/_cpp/_cpp_subs*.so
 
 
 # Repair the wheel using auditwheel
+echo "Auditwheel repair"
 auditwheel show "$2"
 auditwheel repair "$2" -w "$1"
