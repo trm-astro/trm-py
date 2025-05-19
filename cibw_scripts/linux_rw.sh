@@ -15,17 +15,18 @@ if ! ldd "$LIB_FILE" | grep -q "$PCRE_LIB/lib"; then
 fi
 
 
+
 #getting into the weeds
 # find the wheel and extract the library
-unzip "$2"
+unzip "$2" -d "uncomp"
 # inspect the three c++ extensions found in the wheel
 # check the shared object files
-ls -l $2/$(basename "$2" .whl)/lib/
-ls -l $2/$(basename "$2" .whl)/trm_py/_cpp/
+ls -l uncomp/lib/
+ls -l uncomp/trm_py/_cpp/
 
-dll $2/$(basename "$2" .whl)/trm_py/_cpp/_cpp_doppler*.so
-dll $2/$(basename "$2" .whl)/trm_py/_cpp/_cpp_roche*.so
-dll $2/$(basename "$2" .whl)/trm_py/_cpp/_cpp_subs*.so
+dll uncomp/trm_py/_cpp/_cpp_doppler*.so
+dll uncomp/trm_py/_cpp/_cpp_roche*.so
+dll uncomp/trm_py/_cpp/_cpp_subs*.so
 
 
 # Repair the wheel using auditwheel
