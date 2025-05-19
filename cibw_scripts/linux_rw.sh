@@ -24,9 +24,9 @@ unzip "$2" -d "uncomp"
 ls -l uncomp/lib/
 ls -l uncomp/trm_py/_cpp/
 
-dll uncomp/trm_py/_cpp/_cpp_doppler*.so
-dll uncomp/trm_py/_cpp/_cpp_roche*.so
-dll uncomp/trm_py/_cpp/_cpp_subs*.so
+ldd uncomp/trm_py/_cpp/_cpp_doppler*.so
+ldd uncomp/trm_py/_cpp/_cpp_roche*.so
+ldd uncomp/trm_py/_cpp/_cpp_subs*.so
 
 
 # Repair the wheel using auditwheel
