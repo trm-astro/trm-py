@@ -22,8 +22,6 @@ rm -rf uncomp || true
 unzip "$2" -d "uncomp"
 # inspect the three c++ extensions found in the wheel
 # check the shared object files
-echo "Checking lib"
-ls -l uncomp/lib/
 echo "Checking trm_py/_cpp"
 ls -l uncomp/trm_py/_cpp/
 
