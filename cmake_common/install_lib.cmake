@@ -65,14 +65,14 @@ function(install_lib PACKAGE_NAME)
     install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}Config.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}ConfigVersion.cmake"
-        DESTINATION "${LIB_PATH}"/cmake/${PACKAGE_NAME}
+        DESTINATION "${LIB_PATH}/cmake/${PACKAGE_NAME}"
     )
 
     # # Export the library target so other projects can import it
     install(EXPORT ${PACKAGE_NAME}Targets
         FILE ${PACKAGE_NAME}Targets.cmake
         NAMESPACE ${PACKAGE_NAME}::
-        DESTINATION "${LIB_PATH}"/cmake/${PACKAGE_NAME}
+        DESTINATION "${LIB_PATH}/cmake/${PACKAGE_NAME}"
     )
 endfunction()
 
