@@ -35,9 +35,6 @@ auditwheel lddtree uncomp/trm_py/_cpp/_cpp_roche*.so
 echo "Checking shared object file subs"
 auditwheel lddtree uncomp/trm_py/_cpp/_cpp_subs*.so
 
-echo "testing looking in the wheel"
-auditwheel lddtree "$2"/trm_py/_cpp/_cpp_subs*.so
-
 # Repair the wheel using auditwheel
 echo "Auditwheel show"
 auditwheel show "$2"

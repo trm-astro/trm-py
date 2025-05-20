@@ -24,7 +24,8 @@ endif()
 if(APPLE)
     set(LOADER_PATH "@loader_path/../../lib")
 elseif(UNIX)
-    set(LOADER_PATH "$ORIGIN/../../lib")
+    # For linux we need to set the loader path to /usr/lib64
+    set(LOADER_PATH "/usr/lib64")
 else()
     set(LOADER_PATH "")  # Windows or unsupported platform
 endif()
