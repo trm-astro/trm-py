@@ -22,7 +22,7 @@ function(install_lib PACKAGE_NAME)
     # For Linux this needs to be in lib64 in the usual system locations
     # Determine platform-specific loader path for shared libraries
     if(APPLE)
-        set(LIB_PATH ="lib")
+        set(LIB_PATH "lib")
     elseif(UNIX)
         set(LIB_PATH "/usr/lib64")
     else()
