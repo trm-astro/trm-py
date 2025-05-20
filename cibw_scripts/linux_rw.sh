@@ -40,4 +40,4 @@ ldd uncomp/trm_py/_cpp/_cpp_subs*.so
 echo "\nAuditwheel show"
 auditwheel show "$2"
 echo "\nAuditwheel repair"
-auditwheel repair "$2" -w "$1"
+auditwheel repair "$2" -w "$1" --lib-sdir lib
