@@ -78,6 +78,7 @@ repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64"] # Only x86_64 is supported for now (due to conan)
+skip = [*-musllinux*] # musllinux is not supported for now (due to conan)
 before-build = [
     "bash cibw_scripts/linux_bb.sh",
     ]
