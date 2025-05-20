@@ -3,9 +3,7 @@ name: Wheels
 on:
   push:
     branches:
-      - scikit-build
       - main
-      - more-cibuildwheel
   pull_request:
     branches:
       - main
