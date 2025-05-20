@@ -21,23 +21,25 @@ fi
 unzip "$2" -d "uncomp"
 # inspect the three c++ extensions found in the wheel
 # check the shared object files
-echo "\nChecking lib"
+echo "Checking lib"
 ls -l uncomp/lib/
-echo "\nChecking trm_py/_cpp"
+echo "Checking trm_py/_cpp"
 ls -l uncomp/trm_py/_cpp/
 
-echo "\nChecking shared object file doppler"
+echo "Checking shared object file doppler"
 ldd uncomp/trm_py/_cpp/_cpp_doppler*.so
 
-echo "\nChecking shared object file roche"
+echo "Checking shared object file roche"
 ldd uncomp/trm_py/_cpp/_cpp_roche*.so
 
-echo "\nChecking shared object file subs"
+echo "Checking shared object file subs"
 ldd uncomp/trm_py/_cpp/_cpp_subs*.so
 
 
 # Repair the wheel using auditwheel
-echo "\nAuditwheel show"
+echo "Auditwheel ldd tree"
+auditwheel lddtree "$2"
+echo "Auditwheel show"
 auditwheel show "$2"
-echo "\nAuditwheel repair"
-auditwheel repair "$2" -w "$1" --lib-sdir lib
+echo "Auditwheel repair: auditwheel repair $2 -w $1"
+auditwheel repair "$2" -w "$1"
