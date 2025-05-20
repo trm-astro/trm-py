@@ -27,18 +27,16 @@ echo "Checking trm_py/_cpp"
 ls -l uncomp/trm_py/_cpp/
 
 echo "Checking shared object file doppler"
-ldd uncomp/trm_py/_cpp/_cpp_doppler*.so
+auditwheel lddtree uncomp/trm_py/_cpp/_cpp_doppler*.so
 
 echo "Checking shared object file roche"
-ldd uncomp/trm_py/_cpp/_cpp_roche*.so
+auditwheel lddtree uncomp/trm_py/_cpp/_cpp_roche*.so
 
 echo "Checking shared object file subs"
-ldd uncomp/trm_py/_cpp/_cpp_subs*.so
+auditwheel lddtree uncomp/trm_py/_cpp/_cpp_subs*.so
 
 
 # Repair the wheel using auditwheel
-echo "Auditwheel ldd tree"
-auditwheel lddtree "$2"
 echo "Auditwheel show"
 auditwheel show "$2"
 echo "Auditwheel repair: auditwheel repair $2 -w $1"
