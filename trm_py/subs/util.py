@@ -3,39 +3,42 @@ import re
 import copy
 import math as m
 import numpy as np
+import scipy.signal
+import scipy.integrate
+from scipy import interpolate, optimize, linalg
 
 from .._cpp import _cpp_subs
 
-# Constants 
-ME     = 9.1093897e-31     # Mass of the electron, SI
-MP     = 1.672621637e-27   # Mass of the proton, SI
-E      = 1.602176487e-19   # Charge on the electron, SI
-H      = 6.6262e-34        # Planck's constant SI
-C      = 2.99792458e8      # Speed of light, SI
-K      = 1.3806e-23        # Boltzmann's constant, SI
-SIGMA  = 5.6703e-8         # Stefan-Boltzmann constant, SI
-RSUN   = 6.9599E8          # Radius of Sun, SI
-PARSEC = 3.085678e16       # 1 parsec, SI
-AU     = 1.4959787061e11   # 1 AU, SI, matches Gauss gravitational constant
-G      = 6.673e-11         # Gravitational constant, SI
-MSUN   = 1.989e30          # Mass of the Sun, SI
-GMSUN  = 1.32712442099e20  # G*MSUN, SI (m^3 s^-2)
-KGAUSS = 0.01720209895     # Gauss' gravitational constant G*MSUN, AU^(3/2) day^-1
-MJ     = 1.8986e27         # Mass of Jupiter, SI
-DAY    = 86400.            # Length of a day, SI
-DYEAR  = 365.25            # Length of a Julian year, in days.
-YEAR   = DYEAR*DAY         # Length of a Julian year, SI
+# Constants
+ME = 9.1093897e-31  # Mass of the electron, SI
+MP = 1.672621637e-27  # Mass of the proton, SI
+E = 1.602176487e-19  # Charge on the electron, SI
+H = 6.6262e-34  # Planck's constant SI
+C = 2.99792458e8  # Speed of light, SI
+K = 1.3806e-23  # Boltzmann's constant, SI
+SIGMA = 5.6703e-8  # Stefan-Boltzmann constant, SI
+RSUN = 6.9599e8  # Radius of Sun, SI
+PARSEC = 3.085678e16  # 1 parsec, SI
+AU = 1.4959787061e11  # 1 AU, SI, matches Gauss gravitational constant
+G = 6.673e-11  # Gravitational constant, SI
+MSUN = 1.989e30  # Mass of the Sun, SI
+GMSUN = 1.32712442099e20  # G*MSUN, SI (m^3 s^-2)
+KGAUSS = 0.01720209895  # Gauss' gravitational constant G*MSUN, AU^(3/2) day^-1
+MJ = 1.8986e27  # Mass of Jupiter, SI
+DAY = 86400.0  # Length of a day, SI
+DYEAR = 365.25  # Length of a Julian year, in days.
+YEAR = DYEAR * DAY  # Length of a Julian year, SI
 
 
 # Properly wrapping the C++ functions in the cpp module
-def voigt(a, x, eps=1.e-8):
+def voigt(a, x, eps=1.0e-8):
     """voigt(a, x) -- returns the Voigt function for a given a and x
     Inputs:
     a -- the Lorentzian width (double)
     x -- the frequency offset (double or numpy array)
     eps -- the precision of the calculation (double)
     Outputs:
-    returns the Voigt function (double or numpy array)    
+    returns the Voigt function (double or numpy array)
     """
     return _cpp_subs.voigt(a, x)
 
@@ -51,7 +54,7 @@ def gammq(a, x):
     return _cpp_subs.gammq(a, x)
 
 
-def planck(wave, temp, units='FLAM'):
+def planck(wave, temp, units="FLAM"):
     """
     Returns Planck spectrum in W/m^2/steradian/m or W/m^2/steradian/Hz.
 
@@ -65,29 +68,31 @@ def planck(wave, temp, units='FLAM'):
     """
 
     if isinstance(wave, np.ndarray) and isinstance(temp, np.ndarray):
-        raise SubsError('trm.subs.planck: either wave or temp can be an array, not both')
+        raise SubsError(
+            "trm.subs.planck: either wave or temp can be an array, not both"
+        )
 
-    efac = H*C/K/(1.e-9*wave)/temp
-    if units == 'FLAM':
-        flux = 2.*H*C*C/pow(1.e-9*wave,5)
-    elif units == 'FNU':
-        flux = 2.*H*C/pow(1.e-9*wave,3)
+    efac = H * C / K / (1.0e-9 * wave) / temp
+    if units == "FLAM":
+        flux = 2.0 * H * C * C / pow(1.0e-9 * wave, 5)
+    elif units == "FNU":
+        flux = 2.0 * H * C / pow(1.0e-9 * wave, 3)
     else:
-        raise ValueError('planck: units = ' + units + ' not recognised.')
+        raise ValueError("planck: units = " + units + " not recognised.")
     if isinstance(temp, np.ndarray):
-        flux = flux*np.ones_like(temp)
+        flux = flux * np.ones_like(temp)
 
     # Need to take a little care evaluating the exponential
     if isinstance(wave, np.ndarray) or isinstance(temp, np.ndarray):
-        ok = efac < 50.
-        flux[ok] /= np.exp(efac[ok])-1.
-        ok = efac >= 50.
+        ok = efac < 50.0
+        flux[ok] /= np.exp(efac[ok]) - 1.0
+        ok = efac >= 50.0
         flux[ok] *= np.exp(-efac[ok])
         return flux
-    elif efac < 50.:
-        return flux/(np.exp(efac)-1.)
+    elif efac < 50.0:
+        return flux / (np.exp(efac) - 1.0)
     else:
-        return flux*np.exp(-efac)
+        return flux * np.exp(-efac)
 
 
 def slitloss(width, seeing):
@@ -101,13 +106,15 @@ def slitloss(width, seeing):
     seeing -- FWHM seeing.
 
     """
-    import scipy.integrate
 
     def sfunc(x, fwhm):
-        sigma = fwhm/2.3548
-        return m.exp(-m.pow(x/sigma,2)/2)/m.sqrt(2.*m.pi)/sigma
+        sigma = fwhm / 2.3548
+        return m.exp(-m.pow(x / sigma, 2) / 2) / m.sqrt(2.0 * m.pi) / sigma
 
-    (sloss,err) = scipy.integrate.quad(sfunc, -width/2., width/2., args=(seeing))
+    (sloss, err) = scipy.integrate.quad(
+        sfunc,
+        -width / 2.0, width / 2.0, args=(seeing)
+    )
     return sloss
 
 
@@ -124,54 +131,55 @@ def splfit(x, y, ye, nspline, thresh, slow=True):
     thresh  -- the rejection threshold
     slow    -- True for worst-point-at-a-time rejection, False for lots.
 
-    Returns (sfit,nrej,rms,ok) where sfit = the final fit, nrej = the number of points rejected,
-    rms = the RMS of the sigma normalised residuals (i.e. = 1 in ideal case where scatter matches
-    errors), and ok = a mask to show which points were used in the final fit.
+    Returns (sfit,nrej,rms,ok) where sfit = the final fit, nrej = the number
+    of points rejected, rms = the RMS of the sigma normalised residuals
+    (i.e. = 1 in ideal case where scatter matches errors), and ok = a mask to
+    show which points were used in the final fit.
     """
 
-    from scipy import interpolate
+    if ye.min() <= 0.0:
+        raise SubsError("Y errors have at least one value <= 0")
 
-    if ye.min() <= 0.:
-        raise SubsError('Y errors have at least one value <= 0')
-
-    ok   = ye > 0.
+    ok = ye > 0.0
     nrej = 1
 
     while nrej:
 
-        xg  = x[ok]
-        yg  = y[ok]
+        xg = x[ok]
+        yg = y[ok]
         yeg = ye[ok]
 
         # space knots (which must be interior knots)
-        knots   = np.arange(xg[0], xg[-1], (xg[-1]-xg[0])/nspline)[1:]
+        knots = np.arange(xg[0], xg[-1], (xg[-1] - xg[0]) / nspline)[1:]
 
         # Fit the spline
-        sp = interpolate.splrep(xg, yg, 1./yeg, task=-1, t=knots)
+        sp = interpolate.splrep(xg, yg, 1.0 / yeg, task=-1, t=knots)
 
         # Calculate the fit (to all points)
         sfit = interpolate.splev(x, sp)
 
-        resid = np.abs((y - sfit)/ye)
-        rms   = np.sqrt((resid[ok]**2).sum()/(len(yg)-nspline))
+        resid = np.abs((y - sfit) / ye)
+        rms = np.sqrt((resid[ok] ** 2).sum() / (len(yg) - nspline))
 
         if slow:
             worst = resid[ok].max()
-            if worst > rms*thresh:                
+            if worst > rms * thresh:
                 ok = ok & (resid != worst)
                 nrej = 1
             else:
                 nrej = 0
         else:
             nok = len(yg)
-            ok  = ok & (resid < rms*thresh)
+            ok = ok & (resid < rms * thresh)
             nnok = len(y[ok])
             nrej = nok - nnok
 
     nrej = len(x) - len(x[ok])
-    return (sfit,nrej,rms,ok)
+    return (sfit, nrej, rms, ok)
 
 
+# TODO: This function has a inconsistent return type a tuple of 4 or 5 it
+# should be split into two and deprecated.
 def sinfit(x, y, ye, period, pfree=False, mask=None):
     """
     Fits a sinusoid to data.
@@ -189,96 +197,104 @@ def sinfit(x, y, ye, period, pfree=False, mask=None):
                still evlauted at all points, but the coefficients are
                based only upon the points set to True in this array
 
-    Returns (sfit,c,a,b) where sfit = the final fit, c,a,b are the fit coefficients, or
-    (sfit,c,a,b,p) if pfree
+    Returns (sfit,c,a,b) where sfit = the final fit, c,a,b are the fit
+    coefficients, or (sfit,c,a,b,p) if pfree
     """
 
-    if ye.min() <= 0.:
-        raise SubsError('Y errors have at least one value <= 0')
+    if ye.min() <= 0.0:
+        raise SubsError("Y errors have at least one value <= 0")
     if mask is None:
-        mask = ye > 0.
+        mask = ye > 0.0
 
     if pfree:
-        from scipy import optimize
-
-        def func(p,x,y,ye):
+        def func(p, x, y, ye):
             c = p[0]
             a = p[1]
             b = p[2]
             period = p[3]
-            phi = 2.*np.pi*x/period
-            return (y-c-a*np.cos(phi)-b*np.sin(phi))/ye
+            phi = 2.0 * np.pi * x / period
+            return (y - c - a * np.cos(phi) - b * np.sin(phi)) / ye
 
-        def dfunc(p,x,y,ye):
-            c = p[0]
+        def dfunc(p, x, _, ye):
+            # call was dfunc(p, x, y, ye) but y not used
+            # c = p[0]
             a = p[1]
             b = p[2]
             period = p[3]
-            phi = 2.*np.pi*x/period
-            wcp = np.cos(phi)/ye
-            wsp = np.sin(phi)/ye
-            return [ -1./ye, -wcp, -wsp, (-a*wsp+b*wcp)*phi/period]
+            phi = 2.0 * np.pi * x / period
+            wcp = np.cos(phi) / ye
+            wsp = np.sin(phi) / ye
+            return [-1.0 / ye, -wcp, -wsp, (-a * wsp + b * wcp) * phi / period]
 
-        (sfit,c,a,b) = sinfit(x,y,ye,period,False,mask)
-        pinit  = np.array((c,a,b,period))
-        result = optimize.leastsq(func, pinit, (x[mask],y[mask],ye[mask]), dfunc, col_deriv=1)
-        c,a,b,period = result[0]
-        phi = 2.*np.pi*x/period
-        return (c+a*np.cos(phi)+b*np.sin(phi),c,a,b,period)
+        (sfit, c, a, b) = sinfit(x, y, ye, period, False, mask)
+        pinit = np.array((c, a, b, period))
+        result = optimize.leastsq(
+            func, pinit, (x[mask], y[mask], ye[mask]), dfunc, col_deriv=1
+        )
+        c, a, b, period = result[0]
+        phi = 2.0 * np.pi * x / period
+        return (c + a * np.cos(phi) + b * np.sin(phi), c, a, b, period)
 
     else:
-        from scipy import linalg
+        phi = 2.0 * np.pi * x / period
+        a = np.matrix(
+            np.column_stack((1.0 / ye, np.cos(phi) / ye,
+                             np.sin(phi) / ye)))
+        b = np.matrix(np.reshape(y / ye, (len(y), 1)))
+        # (c, resid, rank, s) = linalg.lstsq(a[mask, :], b[mask, :])
+        c, _, _, _ = linalg.lstsq(a[mask, :], b[mask, :])
 
-        phi = 2.*np.pi*x/period
-        a   = np.matrix(np.column_stack((1./ye, np.cos(phi)/ye, np.sin(phi)/ye)))
-        b   = np.matrix(np.reshape(y/ye,(len(y),1)))
-        (c,resid,rank,s) = linalg.lstsq(a[mask,:],b[mask,:])
+        sfit = np.array(ye * np.ravel(a * c))
 
-        sfit = np.array(ye*np.ravel(a*c))
-
-        return (sfit,float(c[0]),float(c[1]),float(c[2]))
+        return (sfit, float(c[0]), float(c[1]), float(c[2]))
 
 
 def vac2air(wvac):
-    """wair = vac2air(wvac): convert vacuum wavelengths (in Angstroms) to air wavelengths
+    """wair = vac2air(wvac): convert vacuum wavelengths (in Angstroms) to air
+    wavelengths
 
-    I use a formula quoted in http://www.sdss.org/dr7/products/spectra/vacwavelength.html
-    which I have not however checked independently. It quotes Morton (1991, ApJS, 77, 119)
-    where it appears in a less convenient form.
+    I use a formula quoted in
+    http://www.sdss.org/dr7/products/spectra/vacwavelength.html
+    which I have not however checked independently. It quotes Morton (1991,
+    ApJS, 77, 119) where it appears in a less convenient form.
     """
-    return wvac/(1.0002735182 + (131.4182+2.76249e8/wvac**2)/wvac**2)
+    return wvac / (1.0002735182 + (131.4182 + 2.76249e8 / wvac**2) / wvac**2)
 
 
 def air2vac(wair):
-    """wvac = air2vac(wair): convert air wavelengths (in Angstroms) to vacuum wavelengths
+    """wvac = air2vac(wair): convert air wavelengths (in Angstroms) to vacuum
+    wavelengths
 
     This uses equation 3 quoted in Morton (1991, ApJS, 77, 119)
     """
 
-    sigmasq = (1.e4/wair)**2
+    sigmasq = (1.0e4 / wair) ** 2
 
-    return wair*(1.000064328 + 2.94981e-2/(146.-sigmasq) + 2.5540e-4/(41.-sigmasq))
+    return wair * (
+        1.000064328 + 2.94981e-2 / (146.0 - sigmasq) +
+        2.5540e-4 / (41.0 - sigmasq)
+    )
 
 
 def m2min(mf, m1):
     """
-    Returns the minimum possible mass(es) of a companion star given a mass function 
-    (or a numpy array of them) and a single primary mass. Works by iteration.
+    Returns the minimum possible mass(es) of a companion star given a mass
+    function (or a numpy array of them) and a single primary mass. Works
+    by iteration.
 
     mf -- mass function, i.e. K1**2*(P/2*Pi*G).
     m1 -- mass of primary
     """
 
     m2 = mf
-    for i in range(3):
-        m2 = (mf*(m1+m2)**2)**(1./3.)
-    for i in range(3):
-        m2 -= (m2**3-mf*(m1+m2)**2)/(3*m2**2-2*mf*(m1+m2))
+    for _ in range(3):
+        m2 = (mf * (m1 + m2) ** 2) ** (1.0 / 3.0)
+    for _ in range(3):
+        m2 -= (m2**3 - mf * (m1 + m2) ** 2) / (3 * m2**2 - 2 * mf * (m1 + m2))
     return m2
 
 
 def linterp(x, y, xnew):
-
     """
     Returns linear interpolation of array y onto a new array xnew
 
@@ -288,14 +304,14 @@ def linterp(x, y, xnew):
 
     x    -- array on which values y are defined
     y    -- values defined for every x
-    xnew -- new values of x for which y values will be found by linear interpolation
+    xnew -- new values of x for which y values will be found by linear
+            interpolation
     """
-
-    if len(x) != len(y):
-        raise Exception('subs.linterp: x and y have different lengths')
-    if x.ndim != 1 or y.ndim != 1:
-        raise Exception('subs.linterp: x and/or y do not have correct number of dimensions')
-
+    assert len(x) == len(y), "subs.linterp: x and y must be the same length"
+    assert (
+        x.ndim != 1 or y.ndim != 1
+    ), "subs.linterp: x and/or y do not have\
+        correct number of dimensions"
     # array such that for all j
     # x[iarr[j]-1] < xnew[j] < x[iarr[j]]
 
@@ -304,15 +320,15 @@ def linterp(x, y, xnew):
         iarr = np.digitize(xnew, x)
 
         # linearly interpolate onto same scale as data
-        ok   = (iarr > 0) & (iarr < len(x))
+        ok = (iarr > 0) & (iarr < len(x))
 
-        x1   = xnew[ok] - x[iarr[ok]-1]
-        x2   = x[iarr[ok]] - xnew[ok]
+        x1 = xnew[ok] - x[iarr[ok] - 1]
+        x2 = x[iarr[ok]] - xnew[ok]
         nvec = np.empty_like(xnew)
-        nvec[ok] = (x1*y[iarr[ok]]+x2*y[iarr[ok]-1])/(x1+x2)
+        nvec[ok] = (x1 * y[iarr[ok]] + x2 * y[iarr[ok] - 1]) / (x1 + x2)
 
-    # deal with ends
-        nvec[iarr == 0]      = y[0]
+        # deal with ends
+        nvec[iarr == 0] = y[0]
         nvec[iarr == len(x)] = y[-1]
         return nvec
 
@@ -324,26 +340,38 @@ def linterp(x, y, xnew):
         elif iarr[0] == len(x):
             return y[-1]
         else:
-            return ((xnew - x[iarr[0]-1])*y[iarr[0]]+(x[iarr[0]]-xnew)*y[iarr[0]-1])/(x[iarr[0]]-x[iarr[0]-1])
+            return (
+                (xnew - x[iarr[0] - 1]) * y[iarr[0]]
+                + (x[iarr[0]] - xnew) * y[iarr[0] - 1]
+            ) / (x[iarr[0]] - x[iarr[0] - 1])
 
 
+# TODO: This function is terrible it has multiple return statements and assumes
+# a none return so the unpack should always be a tuple of 2 where the second
+# takes none but if a user expected this and it did not issues could arise.
 def centroid(xpos, fwhm, y, emission=True, e=None):
-    """(xcen,{xerr}) = centroid(xpos, fwhm, y, e=None) -- computes weighted centroid of a feature in a 1D array.
+    """(xcen,{xerr}) = centroid(xpos, fwhm, y, e=None) -- computes weighted
+    centroid of a feature in a 1D array.
 
-    This uses the classic Young & Schneider cross-correlation with a gaussian method. Note that this routine will
-    use all of the arrays passed to it. If it runs slowly you may be be able to speed it up by passing sub-sections
+    This uses the classic Young & Schneider cross-correlation with a gaussian
+    method. Note that this routine will use all of the arrays passed to it. If
+    it runs slowly you may be be able to speed it up by passing sub-sections
     of the arrays.
 
     Arguments:
 
-    xpos     -- initial position, with centre of the first pixel defined as 0.0. This must initially be
-                within the range 1 to len(y)-2, i.e. more than 1 from either end. The routine fails if it cannot
-                locate an extremum of the cross-correlation only shifts
+    xpos     -- initial position, with centre of the first pixel defined as
+                0.0. This must initially be within the range 1 to len(y)-2,
+                i.e. more than 1 from either end. The routine fails if it
+                cannot locate an extremum of the cross-correlation only shifts
                 by 3*fwhm from this position at the most.
-    fwhm     -- the full width at half maximum in pixels of the gaussian which must be >=2.
+    fwhm     -- the full width at half maximum in pixels of the gaussian which
+                must be >=2.
     emission -- True for emission lines, False for absorption
-    y        -- the array of values containing the feature. e are 1-sigma uncertainties. Must have at least 3 pixels.
-    e        -- 1-sigma uncertainties if available. These are only used to estimate the uncertainty in the answer
+    y        -- the array of values containing the feature. e are 1-sigma
+                uncertainties. Must have at least 3 pixels.
+    e        -- 1-sigma uncertainties if available. These are only used to
+                estimate the uncertainty in the answer
 
     Returns:
 
@@ -353,14 +381,12 @@ def centroid(xpos, fwhm, y, emission=True, e=None):
     Raises SubsError exceptions if there are problems.
     """
 
-    from scipy.optimize import brentq
-
     def comperr(xd, y, e, sigma):
         """Computes uncertainty in final position from median"""
-        xdsq = np.power(xd,2)
-        vc   = np.sum(xdsq*np.exp(-xdsq)*np.power(e,2))
-        ddc  = np.sum(y*(xdsq-1)*np.exp(-xdsq/2))
-        return sigma*m.sqrt(vc)/abs(ddc)
+        xdsq = np.power(xd, 2)
+        vc = np.sum(xdsq * np.exp(-xdsq) * np.power(e, 2))
+        ddc = np.sum(y * (xdsq - 1) * np.exp(-xdsq / 2))
+        return sigma * m.sqrt(vc) / abs(ddc)
 
     def dcorr(xd, y):
         """Returns derivative of correlation with gaussian
@@ -368,49 +394,52 @@ def centroid(xpos, fwhm, y, emission=True, e=None):
         xd -- xd offsets from centre of gaussian, scaled by RMS
         y  -- the corresponding y values
         """
-        return np.sum(y*xd*np.exp(-np.power(xd,2)/2))
+        return np.sum(y * xd * np.exp(-np.power(xd, 2) / 2))
 
     # check inputs
     if fwhm < 2:
-        raise SubsError('centroid: fwhm = ' + str(fwhm) + ' < 2')
-    if xpos < 1 or xpos > len(y)-2:
-        raise SubsError('centroid: xpos = ' + str(xpos) + ' is out of allowed range 1 to ' + str(len(y)-2))
+        raise SubsError(f"centroid: fwhm = {str(fwhm)} < 2")
+    if xpos < 1 or xpos > len(y) - 2:
+        raise SubsError(
+            f"centroid: xpos = {str(xpos)} is out of allowed range\
+                        1 to {str(len(y)-2)}"
+        )
     if len(y) < 3:
-        raise SubsError('median: length of y array < 3')
+        raise SubsError("median: length of y array < 3")
     if e is not None and len(e) != len(y):
-        raise SubsError('median: length of e array does not match the y array')
+        raise SubsError("median: length of e array does not match the y array")
 
-    sigma = fwhm/2.3548
-    x     = np.arange(len(y),dtype=float)
-    xd    = (x - xpos)/sigma
-    dc1   = dcorr(xd, y)
+    sigma = fwhm / 2.3548
+    x = np.arange(len(y), dtype=float)
+    xd = (x - xpos) / sigma
+    dc1 = dcorr(xd, y)
     if dc1 == 0:
         if e is not None:
-            return (xpos,comperr(xd, y, e, sigma))
+            return (xpos, comperr(xd, y, e, sigma))
         return xpos
 
     # Try to bracket the peak by looking for closest switch in sign
     # of the derivative of the x-corr.
 
-    x1  = xpos
-    x2  = xpos
+    x1 = xpos
+    x2 = xpos
     dc2 = dc1
     found_switch = False
 
     # move in direction defined by sign of gradient.
     if (dc1 > 0.0 and emission) or (dc1 < 0.0 and not emission):
-        cshift =  0.25
+        cshift = 0.25
     else:
         cshift = -0.25
 
-    shift  = cshift
+    shift = cshift
     while abs(shift) < 3.1:
-        x2  = xpos + fwhm*shift
-        xd  = (x - x2)/sigma
+        x2 = xpos + fwhm * shift
+        xd = (x - x2) / sigma
         dc2 = dcorr(xd, y)
         if dc2 == 0:
-            if e != None:
-                return (x2,comperr(xd, y, e, sigma))
+            if e is not None:
+                return (x2, comperr(xd, y, e, sigma))
             else:
                 return x2
         if (dc1 > 0 and dc2 < 0) or (dc1 < 0 and dc2 > 0):
@@ -419,28 +448,32 @@ def centroid(xpos, fwhm, y, emission=True, e=None):
         shift += cshift
 
     if not found_switch:
-        raise SubsError('centroid: could not find peak within 3*fwhm of initial position')
+        raise SubsError(
+            "centroid: could not find peak within 3*fwhm of initial position"
+        )
 
     # reorder if necessary
     if x1 > x2:
-        (x1,x2)   = (x2,x1)
-        (dc1,dc2) = (dc2,dc1)
+        (x1, x2) = (x2, x1)
+        (dc1, dc2) = (dc2, dc1)
 
-    if x1 < 0.0 or x2 < 1.0 or x1 > len(y)-2 or x2 > len(y)-1:
-        raise SubsError('centroid: bracketting limits = ' + str(x1) + ', ' + str(x2) + ' out of range.')
+    if x1 < 0.0 or x2 < 1.0 or x1 > len(y) - 2 or x2 > len(y) - 1:
+        raise SubsError(
+            f"centroid: bracketting limits =\
+                         {str(x1)}, {str(x2)} out of range."
+        )
 
     # now find root using Brent's method
-
     def bfunc(xpos, x, y, sigma):
-        """Function for the root finder brentq"""
-        return dcorr((x - xpos)/sigma, y)
+        """Function for the root finder optimize.brentq"""
+        return dcorr((x - xpos) / sigma, y)
 
-    (xm,r) = brentq(bfunc, x1, x2, args=(x,y,sigma), full_output=True)
+    (xm, r) = optimize.brentq(bfunc, x1, x2, args=(x, y, sigma), full_output=True)
     if not r.converged:
-        raise SubsError('centroid: brentq did not converge')
+        raise SubsError("centroid: optimize.brentq did not converge")
 
     if e is not None:
-        xd = (x - xm)/sigma
+        xd = (x - xm) / sigma
         return (xm, comperr(xd, y, e, sigma))
     else:
         return xm
@@ -457,7 +490,7 @@ class iStr(str):
         self.__lowerCaseMe = strMe.lower()
 
     def __repr__(self):
-        return "iStr(%s)" % str.__repr__(self)
+        return f"iStr({str.__repr__(self)})"
 
     def __eq__(self, other):
         return self.__lowerCaseMe == other.lower()
@@ -477,8 +510,9 @@ class iStr(str):
     def __ge__(self, other):
         return self.__lowerCaseMe >= other.lower()
 
-    def __cmp__(self, other):
-        return cmp(self.__lowerCaseMe, other.lower())
+    # TODO: find where cmp is defined
+    # def __cmp__(self, other):
+    #     return cmp(self.__lowerCaseMe, other.lower())
 
     def __hash__(self):
         return hash(self.__lowerCaseMe)
@@ -498,7 +532,7 @@ class iStr(str):
     def index(self, other, *args):
         return str.index(self.__lowerCaseMe, other.lower(), *args)
 
-    def lower(self):   # Courtesy Duncan Booth
+    def lower(self):  # Courtesy Duncan Booth
         return self.__lowerCaseMe
 
     def rfind(self, other, *args):
@@ -521,7 +555,7 @@ class Odict(dict):
     nlength = 20
 
     def __init__(self, dct=None):
-        if dct == None:
+        if dct is None:
             self._keys = []
             dict.__init__(self, {})
         else:
@@ -534,23 +568,24 @@ class Odict(dict):
 
     def __setitem__(self, key, item):
         dict.__setitem__(self, key, item)
-        # 'try' needed to avoid error with pickling with protocol = 2 
+        # 'try' needed to avoid error with pickling with protocol = 2
         try:
-            if key not in self._keys: self._keys.append(key)
+            if key not in self._keys:
+                self._keys.append(key)
         except AttributeError:
             self._keys = [key]
 
     def __str__(self):
-        st    = ''
-        inset = ' '*Odict.ninset
+        st = ""
+        inset = " " * Odict.ninset
         Odict.ninset += Odict.nincr
-        for (key,val) in self.iteritems():
+        for key, val in self.iteritems():
             if isinstance(val, Odict):
-                st += ('%s%-' + str(Odict.nlength) + 's\n') % (inset,key)
+                st += ("%s%-" + str(Odict.nlength) + "s\n") % (inset, key)
             else:
-                st += ('%s%-' + str(Odict.nlength) + 's ') % (inset,key)
-            st += str(val) + '\n'
-            
+                st += ("%s%-" + str(Odict.nlength) + "s ") % (inset, key)
+            st += str(val) + "\n"
+
         Odict.ninset -= Odict.nincr
         return st
 
@@ -573,7 +608,7 @@ class Odict(dict):
         try:
             key = self._keys[-1]
         except IndexError:
-            raise KeyError('dictionary is empty')
+            raise KeyError("dictionary is empty")
 
         val = self[key]
         del self[key]
@@ -581,12 +616,13 @@ class Odict(dict):
         return (key, val)
 
     def setdefault(self, key, failobj=None):
-        if key not in self._keys: self._keys.append(key)
+        if key not in self._keys:
+            self._keys.append(key)
         return dict.setdefault(self, key, failobj)
 
     def update(self, dct):
-        for (key,val) in dct.items():
-            self.__setitem__(key,val)
+        for key, val in dct.items():
+            self.__setitem__(key, val)
 
     def values(self):
         return map(self.get, self._keys)
@@ -599,7 +635,7 @@ class _odict_iteritem:
     """Iterator class for Odict"""
 
     def __init__(self, od):
-        self.last = 0  
+        self.last = 0
         self.odct = od
 
     def __iter__(self):
@@ -611,7 +647,7 @@ class _odict_iteritem:
         key = self.odct._keys[self.last]
         val = self.odct[key]
         self.last += 1
-        return (key,val)
+        return (key, val)
 
 
 def str2radec(position, crude=False):
@@ -627,11 +663,14 @@ def str2radec(position, crude=False):
     Here are example input formats, both good and bad:
 
     12 34 56.1 -23 12 12.1     -- OK. 'system' will default to ICRS
-    234.5 34.2  B1950          -- OK. RA, Dec entered in decimal degrees, B1950 to override default ICRS
+    234.5 34.2  B1950          -- OK. RA, Dec entered in decimal degrees,
+                                  B1950 to override default ICRS
     11 02 12.1 -23.2 J2000     -- NOK. Cannot mix HMS/DMS with decimals
-    11 02 12.1 -23 01 12 J4000 -- NOK. Only 'ICRS', 'B1950', 'J2000' allowed at end.
+    11 02 12.1 -23 01 12 J4000 -- NOK. Only 'ICRS', 'B1950', 'J2000' allowed
+                                  at end.
     1.02323e2 -32.5            -- NOK. Scientific notation not supported.
-    11 02 12.1 23 01 12        -- NOK. In HMS mode, the sign of the declination must be supplied
+    11 02 12.1 23 01 12        -- NOK. In HMS mode, the sign of the
+                                  declination must be supplied
     11 02 12.1 -00 00 02       -- OK. - sign will be picked up
     25 01 61.2 +90 61 78       -- NOK. various items out of range.
     12:32:02.4 -12:11 10.2     -- OK. Colon separators allowed.
@@ -641,111 +680,184 @@ def str2radec(position, crude=False):
 
     A SubsError is raised on failure
     """
-    
+
     # Try out three types of match
-    m = re.search(r'^\s*(\d{1,2})(?:\:|\s+)(\d{1,2})(?:\:|\s+)(\d{1,2}(?:\.\d*)?)\s+([\+-])(\d{1,2})(?:\:|\s+)(\d{1,2})(?:\:|\s+)(\d{1,2}(?:\.\d*)?)(?:\s+(\w+))?\s*$', position)
+    m = re.search(
+        r"^\s*(\d{1,2})(?:\:|\s+)(\d{1,2})(?:\:|\s+)(\d{1,2}(?:\.\d*)?)\s+([\+-])(\d{1,2})(?:\:|\s+)(\d{1,2})(?:\:|\s+)(\d{1,2}(?:\.\d*)?)(?:\s+(\w+))?\s*$",
+        position,
+    )  # ignore: E501
     if m:
-        (rah,ram,ras,decsign,decd,decm,decs,system) = m.groups()
-        rah  = int(rah)
-        ram  = int(ram)
-        ras  = float(ras)
+        (rah, ram, ras, decsign, decd, decm, decs, system) = m.groups()
+        rah = int(rah)
+        ram = int(ram)
+        ras = float(ras)
         decd = int(decd)
         decm = int(decm)
         decs = float(decs)
-        if (rah > 23 and ram > 0 and ras > 0.) or ram > 60 or ras > 60. \
-                or (decd > 89 and decm > 0 and decs > 0.) or decm > 60 or decs > 60.:
-            raise SubsError('trm.subs.str2radec: one or more of the entries in the astronomical coordinates "' + position + '" is out of range')
+        if (
+            (rah > 23 and ram > 0 and ras > 0.0)
+            or ram > 60
+            or ras > 60.0
+            or (decd > 89 and decm > 0 and decs > 0.0)
+            or decm > 60
+            or decs > 60.0
+        ):
+            raise SubsError(
+                f'trm.subs.str2radec: one or more of the entries in the\
+                astronomical coordinates "{position}" is out of range'
+            )
 
-        if not system: system = 'ICRS'
-        if system != 'ICRS' and system != 'J2000' and system != 'B1950':
-            raise SubsError('trm.subs.str2radec: astronomical coordinate system must be one of ICRS, B1950, J2000; ' + system + ' is not recognised.')
+        if not system:
+            system = "ICRS"
+        if system != "ICRS" and system != "J2000" and system != "B1950":
+            raise SubsError(
+                f"trm.subs.str2radec: astronomical coordinate system must be\
+                one of ICRS, B1950, J2000; {system} is not recognised."
+            )
 
-        ra  = rah + ram/60. + ras/3600.
-        dec = decd + decm/60. + decs/3600.
-        if decsign == '-': dec = -dec
-        return (ra,dec,system)
+        ra = rah + ram / 60.0 + ras / 3600.0
+        dec = decd + decm / 60.0 + decs / 3600.0
+        if decsign == "-":
+            dec = -dec
+        return (ra, dec, system)
 
     # No arcseconds of dec as sometimes is the case with coords from simbad
-    m = re.search(r'^\s*(\d{1,2})(?:\:|\s+)(\d{1,2})(?:\:|\s+)(\d{1,2}(?:\.\d*)?)\s+([\+-])(\d{1,2})(?:\:|\s+)(\d{1,2}\.\d*)(?:\s+(\w+))?\s*$', position)
+    m = re.search(
+        r"^\s*(\d{1,2})(?:\:|\s+)(\d{1,2})(?:\:|\s+)(\d{1,2}(?:\.\d*)?)\s+([\+-])(\d{1,2})(?:\:|\s+)(\d{1,2}\.\d*)(?:\s+(\w+))?\s*$",
+        position,
+    )  # ignore: E501
     if m:
-        (rah,ram,ras,decsign,decd,decm,system) = m.groups()
-        rah  = int(rah)
-        ram  = int(ram)
-        ras  = float(ras)
+        (rah, ram, ras, decsign, decd, decm, system) = m.groups()
+        rah = int(rah)
+        ram = int(ram)
+        ras = float(ras)
         decd = int(decd)
         decm = float(decm)
-        if (rah > 23 and ram > 0 and ras > 0.) or ram > 60 or ras > 60. \
-                or (decd > 89 and decm > 0.) or decm > 60.:
-            raise SubsError('trm.subs.str2radec: one or more of the entries in the astronomical coordinates "' + position + '" is out of range')
+        if (
+            (rah > 23 and ram > 0 and ras > 0.0)
+            or ram > 60
+            or ras > 60.0
+            or (decd > 89 and decm > 0.0)
+            or decm > 60.0
+        ):
+            raise SubsError(
+                f'trm.subs.str2radec: one or more of the entries in the\
+                    astronomical coordinates "{position}" is out of range'
+            )
 
-        if not system: system = 'ICRS'
-        if system != 'ICRS' and system != 'J2000' and system != 'B1950':
-            raise SubsError('trm.subs.str2radec: astronomical coordinate system must be one of ICRS, B1950, J2000; ' + system + ' is not recognised.')
+        if not system:
+            system = "ICRS"
+        if system != "ICRS" and system != "J2000" and system != "B1950":
+            raise SubsError(
+                f"trm.subs.str2radec: astronomical coordinate system must be\
+                one of ICRS, B1950, J2000; {system} is not recognised."
+            )
 
-        ra  = rah + ram/60. + ras/3600.
-        dec = decd + decm/60.
-        if decsign == '-': dec = -dec
-        return (ra,dec,system)
+        ra = rah + ram / 60.0 + ras / 3600.0
+        dec = decd + decm / 60.0
+        if decsign == "-":
+            dec = -dec
+        return (ra, dec, system)
 
     # Decimal entries
-    m = re.search(r'^\s*(\d{1,3}(?:\.\d*)?)\s+([+-]?\d{1,2}(?:\.\d*)?)\s+(\w+)?\s*$', position)
+    m = re.search(
+        r"^\s*(\d{1,3}(?:\.\d*)?)\s+([+-]?\d{1,2}(?:\.\d*)?)\s+(\w+)?\s*$", position
+    )  # ignore: E501
     if m:
-        print ('matched decimal entries')
-        (rad,dec,system) = m.groups()
-        ra   = float(rad)/15.
-        dec  = float(dec)
-        if ra >= 24. or dec < -90. or dec > 90.:
-            raise SubsError('trm.subs.str2radec: one or more of the entries in the astronomical coordinates "' + position + '" is out of range')
+        print("matched decimal entries")
+        (rad, dec, system) = m.groups()
+        ra = float(rad) / 15.0
+        dec = float(dec)
+        if ra >= 24.0 or dec < -90.0 or dec > 90.0:
+            raise SubsError(
+                f'trm.subs.str2radec: one or more of the entries in the\
+                astronomical coordinates "{position}" is out of range'
+            )
 
-        if not system: system = 'ICRS'
-        if system != 'ICRS' and system != 'J2000' and system != 'B1950':
-            raise SubsError('trm.subs.str2radec: astronomical coordinate system must be one of ICRS, B1950, J2000; ' + system + ' is not recognised.')
+        if not system:
+            system = "ICRS"
+        if system != "ICRS" and system != "J2000" and system != "B1950":
+            raise SubsError(
+                f"trm.subs.str2radec: astronomical coordinate system must be\
+                one of ICRS, B1950, J2000; {system} is not recognised."
+            )
 
-        return (ra,dec,system)
+        return (ra, dec, system)
 
     if crude:
         # crude coords of form "12 34.5 +12 34"
-        m = re.search(r'^\s*(\d{1,2})(?:\:|\s+)(\d{1,2}(?:\.\d*)?)\s+([\+-])(\d{1,2})(?:\:|\s+)(\d{1,2})(?:\s+(\w+))?\s*$', position)
+        m = re.search(
+            r"^\s*(\d{1,2})(?:\:|\s+)(\d{1,2}(?:\.\d*)?)\s+([\+-])(\d{1,2})(?:\:|\s+)(\d{1,2})(?:\s+(\w+))?\s*$",
+            position,
+        )  # ignore: E501
         if m:
-            (rah,ram,decsign,decd,decm,system) = m.groups()
-            rah  = int(rah)
-            ram  = float(ram)
+            (rah, ram, decsign, decd, decm, system) = m.groups()
+            rah = int(rah)
+            ram = float(ram)
             decd = int(decd)
             decm = int(decm)
-            if (rah > 23 and ram > 0.) or ram > 60. or (decd > 89 and decm > 0) or decm > 60:
-                raise SubsError('trm.subs.str2radec: one or more of the entries in the astronomical coordinates "' + position + '" is out of range')
+            if (
+                (rah > 23 and ram > 0.0)
+                or ram > 60.0
+                or (decd > 89 and decm > 0)
+                or decm > 60
+            ):
+                raise SubsError(
+                    f'trm.subs.str2radec: one or more of the entries in the\
+                    astronomical coordinates "{position}" is out of range'
+                )
 
-            if not system: system = 'ICRS'
-            if system != 'ICRS' and system != 'J2000' and system != 'B1950':
-                raise SubsError('trm.subs.str2radec: astronomical coordinate system must be one of ICRS, B1950, J2000; ' + system + \
-                                    ' is not recognised.')
+            if not system:
+                system = "ICRS"
+            if system != "ICRS" and system != "J2000" and system != "B1950":
+                raise SubsError(
+                    f"trm.subs.str2radec: astronomical coordinate system must\
+                    be one of ICRS, B1950, J2000; {system} is not recognised."
+                )
 
-            ra  = rah + ram/60.
-            dec = decd + decm/60.
-            if decsign == '-': dec = -dec
-            return (ra,dec,system)
+            ra = rah + ram / 60.0
+            dec = decd + decm / 60.0
+            if decsign == "-":
+                dec = -dec
+            return (ra, dec, system)
 
         # even cruder: "12 34 +12.4"
-        m = re.search(r'^\s*(\d{1,2})(?:\:|\s+)(\d{1,2})\s+([\+-])(\d{1,2}(?:\.\d*)?)(?:\s+(\w+))?\s*$', position)
+        m = re.search(
+            r"^\s*(\d{1,2})(?:\:|\s+)(\d{1,2})\s+([\+-])(\d{1,2}(?:\.\d*)?)(?:\s+(\w+))?\s*$",
+            position,
+        )  # ignore: E501
         if m:
-            rah,ram,decsign,decd,system = m.groups()
-            rah  = int(rah)
-            ram  = int(ram)
+            rah, ram, decsign, decd, system = m.groups()
+            rah = int(rah)
+            ram = int(ram)
             decd = float(decd)
-            if (rah > 23 and ram > 0) or ram > 60 or decd > 90.:
-                raise SubsError('trm.subs.str2radec: one or more of the entries in the astronomical coordinates "' + position + '" is out of range')
+            if (rah > 23 and ram > 0) or ram > 60 or decd > 90.0:
+                raise SubsError(
+                    'trm.subs.str2radec: one or more of the entries in the astronomical coordinates "'
+                    + position
+                    + '" is out of range'
+                )
 
-            if not system: system = 'ICRS'
-            if system != 'ICRS' and system != 'J2000' and system != 'B1950':
-                raise SubsError('trm.subs.str2radec: astronomical coordinate system must be one of ICRS, B1950, J2000; ' + system + \
-                                    ' is not recognised.')
+            if not system:
+                system = "ICRS"
+            if system != "ICRS" and system != "J2000" and system != "B1950":
+                raise SubsError(
+                    "trm.subs.str2radec: astronomical coordinate system must be one of ICRS, B1950, J2000; "
+                    + system
+                    + " is not recognised."
+                )
 
-            ra  = rah + ram/60.
+            ra = rah + ram / 60.0
             dec = decd
-            if decsign == '-': dec = -dec
-            return (ra,dec,system)
+            if decsign == "-":
+                dec = -dec
+            return (ra, dec, system)
 
-    raise SubsError('trm.subs.str2radec: could not interpret "' + position + '" as astronomical coordinates')
+    raise SubsError(
+        'trm.subs.str2radec: could not interpret "'
+        + position
+        + '" as astronomical coordinates'
+    )
 
 
 def observatory(telescope=None):
@@ -763,69 +875,114 @@ def observatory(telescope=None):
     latitude   -- latitude in degrees
     height     -- height above sea-level, metres
     """
-    
-    OBS = [ \
-            ['WHT','La Palma','17 52 53.9','W','28 45 38.3','N',2332.], \
-            ['INT','La Palma','17 52 40.', 'W','28 45 43.','N',2336.], \
-            ['LT','La Palma','17 52 45.', 'W','28 45 44.','N',2336.], \
-            ['SAAO','Sutherland','20 48 38.5','E','32 22 46.','S', 1798.], \
-            ['NTT', 'La Scilla','70 44 00.','W','29 15 00.','S', 2400.], \
-            ['VLT', 'Paranal','70 24 9.9','W','24 37 30.3','S',2635.], \
-            ['SRT', 'University of Warwick','01 28 0.0','W','52 25 00','N',20.], \
-            ['Greenwich', 'London','00 00 0.0','W','51 29 00','N',20.], \
-            ['SDSS', 'Apache Point','105 49 13','W','32 46 49','N',2788.], \
-            ['SOAR', 'Cerro Pachon','70 44 01.11','W','30 14 16.41','S',2713.], \
-            ['TNT','Doi Inthanon','98 28 56','E','18 34 26','N',2457.], \
-            ['ATCA','Narrabri','149 32 56.327','E','30 18 52.048', 'S', 209.3], \
-            ['200-in','Palomar','116 51 54','W','33 21 23', 'N', 1713.], \
-            ]
+
+    OBS = [
+        ["WHT", "La Palma", "17 52 53.9", "W", "28 45 38.3", "N", 2332.0],
+        ["INT", "La Palma", "17 52 40.", "W", "28 45 43.", "N", 2336.0],
+        ["LT", "La Palma", "17 52 45.", "W", "28 45 44.", "N", 2336.0],
+        ["SAAO", "Sutherland", "20 48 38.5", "E", "32 22 46.", "S", 1798.0],
+        ["NTT", "La Scilla", "70 44 00.", "W", "29 15 00.", "S", 2400.0],
+        ["VLT", "Paranal", "70 24 9.9", "W", "24 37 30.3", "S", 2635.0],
+        [
+            "SRT",
+            "University of Warwick",
+            "01 28 0.0",
+            "W",
+            "52 25 00",
+            "N",
+            20.0,
+        ],  # ignore : E501
+        ["Greenwich", "London", "00 00 0.0", "W", "51 29 00", "N", 20.0],
+        ["SDSS", "Apache Point", "105 49 13", "W", "32 46 49", "N", 2788.0],
+        [
+            "SOAR",
+            "Cerro Pachon",
+            "70 44 01.11",
+            "W",
+            "30 14 16.41",
+            "S",
+            2713.0,
+        ],  # ignore : E501
+        ["TNT", "Doi Inthanon", "98 28 56", "E", "18 34 26", "N", 2457.0],
+        [
+            "ATCA",
+            "Narrabri",
+            "149 32 56.327",
+            "E",
+            "30 18 52.048",
+            "S",
+            209.3,
+        ],  # ignore : E501
+        ["200-in", "Palomar", "116 51 54", "W", "33 21 23", "N", 1713.0],
+    ]
 
     if telescope is not None:
         for obs in OBS:
             if obs[0] == telescope:
                 break
         else:
-            raise SubsError('observatory: did not recognize telescope = ' + telescope)
+            raise SubsError(
+                f"observatory: did not recognize telescope = {telescope}"
+            )
         select = obs
     else:
-        print ('Observatories: ')
-        for n in range(len(OBS)):
-            (tel,obs,lng,eorw,lat,nors,height) = OBS[n]
-            if nors == 'S':
-                lats = '-'
+        print("Observatories: ")
+        for n, OBS_val in enumerate(OBS):
+            (tel, obs, lng, eorw, lat, nors, height) = OBS_val
+            if nors == "S":
+                lats = "-"
             else:
-                lats = '+'
-            print ('%2d) telescope = %-5s  observatory = %-12s longitude = %-11s%s  latitude = %s%-11s  height = %6.1f' % (n+1,tel,obs,lng,eorw,lats,lat,height))
+                lats = "+"
+            print(
+                f"{n+1:2d}) telescope = {tel:<5s}  \
+                observatory = {obs:<12s} \
+                longitude = {lng:<11s}{eorw:<2s}  \
+                latitude = {lats:<1s}{lat:<11s}  \
+                height = {height:6.1f}"
+                # "%2d) telescope = %-5s  observatory = %-12s longitude = %-11s%s  latitude = %s%-11s  height = %6.1f"  # ignore: E501
+                # % (n + 1, tel, obs, lng, eorw, lats, lat, height)
+            )
 
         try:
-            n = int(raw_input('Select number of observatory: '))
-        except:
-            raise SubsError('Failed to interpret selection as an integer')
+            n = int(raw_input("Select number of observatory: "))
+        except Exception as e:
+            raise SubsError(
+                f"Failed to interpret selection as an integer\n {e}"
+            )
         if n < 1 or n > len(OBS):
-            raise SubsError('Observatory number = ' + str(n) + ' is out of range.')
-        select = OBS[n-1]
+            raise SubsError(f"Observatory number = {str(n)} is out of range.")
+        select = OBS[n - 1]
 
     # format for output
-    (tel,obs,lng,eorw,lat,nors,height) = select
-    (ld,lm,ls) = lng.split()
-    longitude = float(ld) + float(lm)/60. + float(ls)/3600.
-    if eorw == 'W':
+    (tel, obs, lng, eorw, lat, nors, height) = select
+    (ld, lm, ls) = lng.split()
+    longitude = float(ld) + float(lm) / 60.0 + float(ls) / 3600.0
+    if eorw == "W":
         longitude = -longitude
-    elif eorw != 'E':
-        raise SubsError('Pre-stored observatory East-or-West string = ' + eorw + ' is not one of E or W')
-    
-    (ld,lm,ls) = lat.split()
-    latitude = float(ld) + float(lm)/60. + float(ls)/3600.
-    if nors == 'S':
+    elif eorw != "E":
+        raise SubsError(
+            "Pre-stored observatory East-or-West string = "
+            + eorw
+            + " is not one of E or W"
+        )
+
+    (ld, lm, ls) = lat.split()
+    latitude = float(ld) + float(lm) / 60.0 + float(ls) / 3600.0
+    if nors == "S":
         latitude = -latitude
-    elif nors != 'N':
-        raise SubsError('Pre-stored observatory North-or-South string = ' + nors + ' is not one of N or S')
+    elif nors != "N":
+        raise SubsError(
+            "Pre-stored observatory North-or-South string = "
+            + nors
+            + " is not one of N or S"
+        )
 
-    return (tel,obs,longitude,latitude,float(height))
+    return (tel, obs, longitude, latitude, float(height))
 
 
-def d2hms(hour, precision=2, sep=':', dp=3, sign=False, nearest=False):
-    """hms = d2hms(hour, precision=2) -- returns HH MM SS.SS time string from a decimal hour
+def d2hms(hour, precision=2, sep=":", dp=3, sign=False, nearest=False):
+    """hms = d2hms(hour, precision=2) -- returns HH MM SS.SS time string from
+    a decimal hour
 
     hour      -- decimal hour
     precision -- 0 gives hh:mm, 1 gives hh:mm:ss, 2 gives hh:mm:ss.sss
@@ -841,55 +998,63 @@ def d2hms(hour, precision=2, sep=':', dp=3, sign=False, nearest=False):
         add = 0.00001
     h = int(abs(hour))
     if precision == 0:
-        m = int(60.*(abs(hour)-h)+add)
-        st = '%02.2d%s%02.2d' % (h,sep,m)
+        m = int(60.0 * (abs(hour) - h) + add)
+        st = "%02.2d%s%02.2d" % (h, sep, m)
     else:
-        m = int(60.*(abs(hour)-h))
+        m = int(60.0 * (abs(hour) - h))
     if precision == 1:
-        s  = int(3600.*(abs(hour)-h-m/60.)+add)
-        st = '%02.2d%s%02.2d%s%02.2d' % (h,sep,m,sep,s)
+        s = int(3600.0 * (abs(hour) - h - m / 60.0) + add)
+        st = "%02.2d%s%02.2d%s%02.2d" % (h, sep, m, sep, s)
     else:
-        s = 3600.*(abs(hour)-h-m/60.)
+        s = 3600.0 * (abs(hour) - h - m / 60.0)
         if dp:
-            st = ('%02.2d%s%02.2d%s%0' + str(dp+3) + '.' + str(dp) +'f') % (h,sep,m,sep,s)
+            st = ("%02.2d%s%02.2d%s%0" + str(dp + 3) + "." + str(dp) + "f") % (
+                h,
+                sep,
+                m,
+                sep,
+                s,
+            )
         else:
-            st = ('%02.2d%s%02.2d%s%02d') % (h,sep,m,sep,s)
+            st = ("%02.2d%s%02.2d%s%02d") % (h, sep, m, sep, s)
 
     if sign:
         if hour < 0:
-            st = '-' + st
+            st = "-" + st
         else:
-            st = '+' + st
+            st = "+" + st
     return st
 
 
 def hms2d(utc):
-    """hour = hms2d(utc) -- returns decimal hour from and HH MM SS.SS time string. Can also cope
-    with initial + or - sign.
+    """hour = hms2d(utc) -- returns decimal hour from and HH MM SS.SS time
+                         string. Can also cope with initial + or - sign.
 
-    utc    -- time in HH MM SS.SSS format. HH MM and SS must be separated by exactly 1 character.
+    utc    -- time in HH MM SS.SSS format. HH MM and SS must be separated
+           by exactly 1 character.
     """
-    if utc[:1] == '-':
-        sign = -1.
+    if utc[:1] == "-":
+        sign = -1.0
         off = 1
-    elif utc[:1] == '+':
-        sign = +1.
+    elif utc[:1] == "+":
+        sign = +1.0
         off = 1
     else:
-        sign = +1.
+        sign = +1.0
         off = 0
-    h = int(utc[off:2+off])
-    m = int(utc[3+off:5+off])
-    s = float(utc[6+off:])
-    return sign*(h + m/60. + s/3600.)
+    h = int(utc[off: 2 + off])
+    m = int(utc[3 + off: 5 + off])
+    s = float(utc[6 + off:])
+    return sign * (h + m / 60.0 + s / 3600.0)
 
 
 # Exception class
 class SubsError(Exception):
     """For throwing exceptions from the subs module"""
+
     def __init__(self, value):
         self.value = value
-            
+
     def __str__(self):
         return repr(self.value)
 
@@ -907,34 +1072,40 @@ class Poly(np.ndarray):
         """
         # Stuff below cribbed off web without any understanding on my part
 
-        # Make sure we are working with an array, and copy the data if requested
+        # Make sure we are working with an array, and copy the data if
+        # requested
         subarr = np.array((n), np.float)
-    
+
         # Transform 'subarr' from an ndarray to our new subclass.
         subarr = subarr.view(subtype)
-   
-        subarr.x0     = x0
+
+        subarr.x0 = x0
         subarr.xscale = xscale
         return subarr
 
-    def __array_finalize__(self,obj):
-           # We use the getattr method to set a default if 'obj' doesn't have the 'info' attribute
-           self.info = getattr(obj, 'info', {})
-           # We could have checked first whether self.info was already defined:
-           #if not hasattr(self, 'info'):
-           #    self.info = getattr(obj, 'info', {})
-  
+    def __array_finalize__(self, obj):
+        # We use the getattr method to set a default if 'obj' doesn't have the
+        # 'info' attribute
+        self.info = getattr(obj, "info", {})
+        # We could have checked first whether self.info was already defined:
+        # if not hasattr(self, 'info'):
+        #    self.info = getattr(obj, 'info', {})
+
     def __repr__(self):
-        desc="""
+        desc = """
 array(data=
          %(data)s,
-  x0    =%(x0)s,
+  x0 =%(x0)s,
   xscale=%(xscale)s)
   """
-        return desc % {'data': str(self), 'x0': self.x0, 'xscale': self.xscale }
+        return desc % {"data": str(self), "x0": self.x0, "xscale": self.xscale}
 
     def __str__(self):
-        return 'coeffs=\n%s\nx0=%f, xscale=%f' % (np.ndarray(self).__str__(), self.x0, self.xscale)
+        return "coeffs=\n%s\nx0=%f, xscale=%f" % (
+            np.ndarray(self).__str__(),
+            self.x0,
+            self.xscale,
+        )
 
 
 class Vec3(object):
@@ -969,10 +1140,10 @@ class Vec3(object):
             self.y = args[1]
             self.z = args[2]
         else:
-            raise SubsError('Vec3(): can only have 0 or 3 arguments')
+            raise SubsError("Vec3(): can only have 0 or 3 arguments")
 
     def __repr__(self):
-        return '(%f,%f,%f)' % (self.x,self.y,self.z)
+        return "(%f,%f,%f)" % (self.x, self.y, self.z)
 
     def __iadd__(self, other):
         self.x += other.x
@@ -1036,7 +1207,7 @@ class Vec3(object):
         elif i == 2:
             return self.z
         else:
-            raise SubsError('Index out of range 0:3')
+            raise SubsError("Index out of range 0:3")
 
     def sqnorm(self):
         """
@@ -1055,7 +1226,7 @@ class Vec3(object):
         Returns vector as a unit vector in same direction
         """
         leng = m.sqrt(self.sqnorm())
-        if leng == 0.:
+        if leng == 0.0:
             raise SubsError("Vec3.unitv: zero length vector")
         return self / leng
 
@@ -1063,22 +1234,24 @@ class Vec3(object):
         """
         Returns the scalar or dot product of self with other, a 3-vector
         """
-        return self.x*other.x+self.y*other.y+self.z*other.z
+        return self.x * other.x + self.y * other.y + self.z * other.z
 
     def cross(self, other):
         """
         Computes the vector or cross product of self with other, a 3-vector
         """
-        return Vec3(self.y*other.z-self.z*other.y,
-                    self.z*other.x-self.x*other.z,
-                    self.x*other.y-self.y*other.x)
+        return Vec3(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
+        )
 
 
 def dot(a: Vec3, b: Vec3) -> float:
     """
     Computes the scalar or dot product of two 3-vectors
     """
-    assert isinstance(a, Vec3) and isinstance(b, Vec3),\
+    assert isinstance(a, Vec3) and isinstance(b, Vec3), \
         "Arguments must be of type Vec3"
     return a.dot(b)
 
@@ -1087,26 +1260,35 @@ def cross(a: Vec3, b: Vec3) -> Vec3:
     """
     Computes the vector or cross product of two 3-vectors
     """
-    assert isinstance(a, Vec3) and isinstance(b, Vec3),\
+    assert isinstance(a, Vec3) and isinstance(b, Vec3), \
         "Arguments must be of type Vec3"
     return a.cross(b)
 
 
 def mr_wd_eggleton(mass):
     """
-    Returns radius of a white dwarf in solar radii given its mass in solar masses
-    This is according to a formula of Eggleton's quoted in Verbunt and Rappaport (1988)
+    Returns radius of a white dwarf in solar radii given its mass in solar
+    masses
+    This is according to a formula of Eggleton's quoted in Verbunt and
+    Rappaport (1988)
     """
 
     if isinstance(mass, np.ndarray):
         if (mass <= 0).any() or (mass >= 1.44).any():
-            raise SubsError("mr_wd_eggleton: mass array contains at least element outside range 0 to 1.44")
+            raise SubsError(
+                "mr_wd_eggleton: mass array contains at least element outside"
+                "range 0 to 1.44"
+            )
     elif mass <= 0 or mass >= 1.44:
-        raise SubsError("mr_wd_eggleton: mass = " + str(mass) + " out of range.");
+        raise SubsError(f"mr_wd_eggleton: mass = {str(mass)} out of range.")
 
-    fac1 = np.power(mass/1.44,2./3.)
-    fac2 = 0.00057/mass;
-    return 0.0114*np.sqrt(1./fac1-fac1)*np.power(1.+3.5*np.power(fac2,2./3.)+fac2,-2./3.)
+    fac1 = np.power(mass / 1.44, 2.0 / 3.0)
+    fac2 = 0.00057 / mass
+    return (
+        0.0114
+        * np.sqrt(1.0 / fac1 - fac1)
+        * np.power(1.0 + 3.5 * np.power(fac2, 2.0 / 3.0) + fac2, -2.0 / 3.0)
+    )
 
 
 def orbital_separation(m1, m2, period):
@@ -1116,7 +1298,9 @@ def orbital_separation(m1, m2, period):
     or numpy array inputs.
     """
 
-    return (G*MSUN*(m1+m2)*(DAY*period/(2.*m.pi))**2)**(1./3.)/RSUN
+    return (G * MSUN * (m1 + m2) * (DAY * period / (2.0 * m.pi)) ** 2) ** (
+        1.0 / 3.0
+    ) / RSUN
 
 
 def orbital_period(m1, m2, a):
@@ -1125,7 +1309,7 @@ def orbital_period(m1, m2, a):
     and the orbital semi-major axis in solar radii, i.e. Kepler's third law
     """
 
-    return 2.*m.pi/m.sqrt(G*MSUN*(m1+m2)/m.pow(RSUN*a,3))/DAY
+    return 2.0 * m.pi / m.sqrt(G * MSUN * (m1 + m2) / m.pow(RSUN * a, 3)) / DAY
 
 
 def jdotgr(m1, m2, a):
@@ -1133,14 +1317,24 @@ def jdotgr(m1, m2, a):
     Returns Jdot/J due to GR. m1, m2, a in solar units, result
     has SI units
     """
-    return -32./5.*(G*MSUN/C/RSUN)**3/C**2/RSUN*m1*m2*(m1+m2)/a**4
+    return (
+        -32.0
+        / 5.0
+        * (G * MSUN / C / RSUN) ** 3
+        / C**2
+        / RSUN
+        * m1
+        * m2
+        * (m1 + m2)
+        / a**4
+    )
 
 
 def jorb(m1, m2, a):
     """
     Returns orbital angular momentum, (SI), given m1, m2, a in solar units
     """
-    return MSUN*m1*m2*m.sqrt(G*MSUN*RSUN*a/(m1+m2))
+    return MSUN * m1 * m2 * m.sqrt(G * MSUN * RSUN * a / (m1 + m2))
 
 
 def jdotrvj(m2, r2, gamma, porb):
@@ -1148,36 +1342,42 @@ def jdotrvj(m2, r2, gamma, porb):
     Returns Rappaport, Verbut, Joss ang mom loss rate (SI)
     m2, r2 solar, porb days.
     """
-    return -3.8e-26*m2*MSUN*RSUN**4*r2**gamma*(2.*m.pi/porb/DAY)**3
+    return (-3.8e-26 * m2 * MSUN * RSUN**4 * r2**gamma *
+            (2.0 * m.pi / porb / DAY) ** 3)
 
 
 def rlobe_eggleton(q):
     """
-    Returns scaled Roche lobe radius of star 2 according to Eggleton's (1983) formula given
-    q = M2/M1. Works for scalar or array values.
+    Returns scaled Roche lobe radius of star 2 according to Eggleton's (1983)
+    formula given q = M2/M1. Works for scalar or array values.
     """
-    return 0.49*q**(2./3.)/(0.6*q**(2./3.)+np.log(1.+ q**(1./3.)))
+    return (
+        0.49
+        * q ** (2.0 / 3.0)
+        / (0.6 * q ** (2.0 / 3.0) + np.log(1.0 + q ** (1.0 / 3.0)))
+    )
 
 
 def date2dmy(dstring):
-    """Returns (year,month,day) as numbers given input dates such as '11 Apr 2004' or 'Apr 11 2004'"""
+    """Returns (year,month,day) as numbers given input dates such as
+    '11 Apr 2004' or 'Apr 11 2004'"""
 
-    rec = re.compile('^\s*(\d{1,2})\s+([a-zA-Z]{3})\s+(\d\d\d\d)\s*$')
-    m   = rec.match(dstring)
+    rec = re.compile("^\s*(\d{1,2})\s+([a-zA-Z]{3})\s+(\d\d\d\d)\s*$")
+    _m = rec.match(dstring)
 
-    if m:
-        day   = int(m.group(1))
-        year  = int(m.group(3))
-        month = month2int(m.group(2))
+    if _m:
+        day = int(_m.group(1))
+        year = int(_m.group(3))
+        month = month2int(_m.group(2))
     else:
-        rec = re.compile('^\s*([a-zA-Z]{3})\s+(\d\d)\s*(\d\d\d\d)\s*$')
-        m   = rec.match(dstring)
-        if m:
-            day   = int(m.group(2))
-            year  = int(m.group(3))
-            month = month2int(m.group(1))
+        rec = re.compile("^\s*([a-zA-Z]{3})\s+(\d\d)\s*(\d\d\d\d)\s*$")
+        _m = rec.match(dstring)
+        if _m:
+            day = int(_m.group(2))
+            year = int(_m.group(3))
+            month = month2int(_m.group(1))
         else:
-            raise SubsError('Date = ' + dstring + ' not in a recognised format.')
+            raise SubsError(f"Date = {dstring} not in a recognised format.")
     return (year, month, day)
 
 
@@ -1187,21 +1387,50 @@ def month2int(name):
     characters of a month name, case insensitively
     """
 
-    names = {'jan' : 1, 'feb' : 2, 'mar' : 3, 'apr' : 4, 'may' : 5, 'jun' : 6, 'jul' : 7, 'aug' : 8, 'sep' : 9, 'oct' : 10, 'nov' : 11, 'dec' : 12}
+    names = {
+        "jan": 1,
+        "feb": 2,
+        "mar": 3,
+        "apr": 4,
+        "may": 5,
+        "jun": 6,
+        "jul": 7,
+        "aug": 8,
+        "sep": 9,
+        "oct": 10,
+        "nov": 11,
+        "dec": 12,
+    }
     lname = name.lower()[:4]
     if lname in names:
         month = names[lname]
     else:
-        raise SubsError('subs.month2int: month = ' + str(lname) + ' not recognised')
+        raise SubsError(f"subs.month2int: month = {str(lname)} not recognised")
     return month
 
 
 def int2month(month):
-    """name = int2month(month) -- returns 3 letter month name given integer 1 to 12"""
-    names = ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec')
+    """name = int2month(month)
+        -- returns 3 letter month name given integer 1 to 12"""
+    names = (
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    )
     if month < 1 or month > 12:
-        raise SubsError('subs.int2month: month = ' + str(month) + ' out of range 1 to 12')
-    return names[month-1]
+        raise SubsError(
+            "subs.int2month: month = " + str(month) + " out of range 1 to 12"
+        )
+    return names[month - 1]
 
 
 def inpoly(poly, x, y):
@@ -1222,13 +1451,16 @@ def inpoly(poly, x, y):
 
     See also: minpoly
     """
-    #TODO: Likely this is better bound into some C for speed, or use shapley
+    # TODO: Likely this is better bound into some C for speed, or use shapley
 
     outside = True
     j = poly.shape[0] - 1
     for i in range(poly.shape[0]):
-        if ( (poly[i,1] > y) != (poly[j,1] > y) ) and \
-                (x < (poly[j,0]-poly[i,0]) * (y-poly[i,1]) / (poly[j,1]-poly[i,1]) + poly[i,0]):
+        if ((poly[i, 1] > y) != (poly[j, 1] > y)) and (
+            x
+            < (poly[j, 0] - poly[i, 0]) * (y - poly[i, 1]) / (poly[j, 1] - poly[i, 1])
+            + poly[i, 0]
+        ):
             outside = not outside
         j = i
     return not outside
@@ -1242,7 +1474,7 @@ def minpoly(poly, x, y):
     second x coordinate etc. It returns True if the point is inside
     the poly.
 
-    See this web page for lengthy description of the method which I 
+    See this web page for lengthy description of the method which I
     translated from the short piece of C-code listed there:
 
     http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
@@ -1253,14 +1485,16 @@ def minpoly(poly, x, y):
 
     See also: inpoly
     """
-    #TODO: Likely this is better bound into some C for speed, or use shapley
+    # TODO: Likely this is better bound into some C for speed, or use shapley
 
-
-    outside = np.ones_like(x,dtype=bool)
+    outside = np.ones_like(x, dtype=bool)
     j = poly.shape[0] - 1
     for i in range(poly.shape[0]):
-        switch =  ((poly[i,1] > y) != (poly[j,1] > y)) & \
-                  (x < (poly[j,0]-poly[i,0]) * (y-poly[i,1]) / (poly[j,1]-poly[i,1]) + poly[i,0])
+        switch = ((poly[i, 1] > y) != (poly[j, 1] > y)) & (
+            x
+            < (poly[j, 0] - poly[i, 0]) * (y - poly[i, 1]) / (poly[j, 1] - poly[i, 1])
+            + poly[i, 0]
+        )
         outside[switch] = ~outside[switch]
         j = i
     return ~outside
@@ -1269,62 +1503,63 @@ def minpoly(poly, x, y):
 def sigma_reject(data, thresh, onebyone):
     """
     This routine computes the raw mean and RMS and the mean and RMS after
-    rejection of points more than thresh*RMS from the mean. The rejection 
-    can be carried out one bad pixel value at a time (onebyone=True) or all bad pixels
-    at a time. The first method (which can involve mutiple pixels of the sam evalue) 
-    is slow but robust whereas the second is fast but potentially dangerous.
+    rejection of points more than thresh*RMS from the mean. The rejection
+    can be carried out one bad pixel value at a time (onebyone=True) or all
+    bad pixels at a time. The first method (which can involve mutiple pixels
+    of the sam evalue) is slow but robust whereas the second is fast but
+    potentially dangerous.
 
     Arguments:
 
     data     -- a numpy array
     thresh   -- threshold number of RMS e.g. 3.
-    onebyone -- True for slow single worst pixel reject methos, False for fast, 
+    onebyone -- True for slow single worst pixel reject methos, False for fast,
                 all bad pixels reject method.
 
     Returns (rawmean,rawrms,clipmean,cliprms,nreject,ncycles)
     """
-    
+
     if not isinstance(data, np.ndarray):
         raise SubsError("sigma_reject: first input is not a numpy.ndarray")
 
     ncycles = 0
     nrej = 1
-    mask = (data == data)
+    mask = data == data
     nrold = 0
 
     while nrej:
         mean = data[mask].mean()
-        rms  = data[mask].std()
-    
+        rms = data[mask].std()
+
         if ncycles == 0:
             rawmean = mean
-            rawrms  = rms
+            rawrms = rms
 
         # Update mask
         diff = np.abs(data - mean)
         if onebyone:
-            if diff[mask].max() > thresh*rms:
-                mask = mask & (diff < diff[mask].max()) 
+            if diff[mask].max() > thresh * rms:
+                mask = mask & (diff < diff[mask].max())
         else:
-            mask = mask & (diff <= thresh*rms)
+            mask = mask & (diff <= thresh * rms)
 
         # Check on number of rejects
         nrnew = np.size(data) - np.size(data[mask])
-        nrej  = nrnew - nrold
-        nrold = nrnew 
+        nrej = nrnew - nrold
+        nrold = nrnew
         ncycles += 1
 
-    return (rawmean,rawrms,mean,rms,nrnew,ncycles)
+    return (rawmean, rawrms, mean, rms, nrnew, ncycles)
 
 
 def find_exec(executable, path=None):
     """Try to find 'executable' in the directories listed in 'path' (a
     string listing directories separated by 'os.pathsep'; defaults to
-    os.environ['PATH']).  Returns the complete filename or raises a 
+    os.environ['PATH']).  Returns the complete filename or raises a
     SubsError if not found.
     """
     if path is None:
-        path = os.environ['PATH']
+        path = os.environ["PATH"]
 
     paths = path.split(os.pathsep)
 
@@ -1333,66 +1568,76 @@ def find_exec(executable, path=None):
         if os.path.isfile(f):
             return f
 
-    raise SubsError('Failed to find command = ' + executable + ' in path = ' + path)
+    raise SubsError(f"Failed to find command = {executable} in path = {path}")
+
 
 def zeta_wd_eggleton(mass):
     """
-    Returns d log(R)/d log(M) of a white dwarf according to a formula of Eggleton's quoted in Verbunt and Rappaport (1988)
+    Returns d log(R)/d log(M) of a white dwarf according to a formula of
+    Eggleton's quoted in Verbunt and Rappaport (1988)
     """
 
     if isinstance(mass, np.ndarray):
         if (mass <= 0).any() or (mass >= 1.44).any():
-            raise SubsError("zeta_wd_eggleton: mass array contains at least element outside range 0 to 1.44")
+            raise SubsError(
+                "zeta_wd_eggleton: mass array contains at least element "
+                "outside range 0 to 1.44"
+            )
     elif mass <= 0 or mass >= 1.44:
-        raise SubsError("zeta_wd_eggleton: mass = " + str(mass) + " out of range.");
+        raise SubsError(f"zeta_wd_eggleton: mass = {str(mass)} out of range.")
 
-    fac1 = np.power(mass/1.44,4./3.)
-    fac2 = 0.00057/mass;
-    fac3 = np.power(fac2,2./3.);
-    return -(1.+fac1)/(1.-fac1)/3.+ 2.*(7.*fac3/3.+fac2)/(1.+3.5*fac3+fac2)/3.
+    fac1 = np.power(mass / 1.44, 4.0 / 3.0)
+    fac2 = 0.00057 / mass
+    fac3 = np.power(fac2, 2.0 / 3.0)
+    return (
+        -(1.0 + fac1) / (1.0 - fac1) / 3.0
+        + 2.0 * (7.0 * fac3 / 3.0 + fac2) / (1.0 + 3.5 * fac3 + fac2) / 3.0
+    )
 
 
-def pts2cont(x, y, x1, x2, nx, y1, y2, ny, xb=0., yb=0., frac=None):
+def pts2cont(x, y, x1, x2, nx, y1, y2, ny, xb=0.0, yb=0.0, frac=None):
     """
     Converts a series of points into a binned image and optionally
-    blurring them. Can also compute contour levels marking particular 
+    blurring them. Can also compute contour levels marking particular
     fractions of points, e.g. 0.68, 0.95
-    
+
     Arguments:
 
     x, y       -- arrays / lists of x and y values of points
-    x1, x2, nx -- range and number of pixels for the X axis. 
+    x1, x2, nx -- range and number of pixels for the X axis.
                   Leftmost pixel starts at x1, rightmost ends at x2.
     y1, y2, ny -- range and number of pixels for the Y axis
     xb, yb     -- amount of blurring in X and Y (RMS in pixels).
-    frac       -- Array / list of fractions to determine equivalent contour levels.
+    frac       -- Array / list of fractions to determine equivalent contour
+                  levels.
 
     Returns: (shist, cont) where shist is a smoothed histogrammed version of
     the points and comt is an array of contour levels corresponding to frac.
     """
 
-    import scipy.signal
-
     # Define edges, accumulate histogram and transpose it
-    xe = np.linspace(x1, x2, nx+1)
-    ye = np.linspace(y1, y2, ny+1)
-    hist,xe,ye = np.histogram2d(x,y,(xe,ye))
+    xe = np.linspace(x1, x2, nx + 1)
+    ye = np.linspace(y1, y2, ny + 1)
+    hist, xe, ye = np.histogram2d(x, y, (xe, ye))
     hist = hist.transpose()
 
-    if xb > 0. or yb > 0.:
+    if xb > 0.0 or yb > 0.0:
         # compute blurring array
-        nxwid = 2*int(3.*xb)+1
-        nywid = 2*int(3.*yb)+1
-        (x,y) = np.mgrid[0:nywid,0:nxwid]
-        if xb > 0. and yb > 0.:
-            fuzz = np.exp(-((x-nxwid//2)/xb)**2/2.-((y-nywid//2)/yb)**2/2.)
-        elif xb > 0.:
-            fuzz = np.exp(-((x-nxwid//2)/xb)**2/2.)
+        nxwid = 2 * int(3.0 * xb) + 1
+        nywid = 2 * int(3.0 * yb) + 1
+        (x, y) = np.mgrid[0:nywid, 0:nxwid]
+        if xb > 0.0 and yb > 0.0:
+            fuzz = np.exp(
+                -(((x - nxwid // 2) / xb) ** 2) / 2.0
+                - ((y - nywid // 2) / yb) ** 2 / 2.0
+            )
+        elif xb > 0.0:
+            fuzz = np.exp(-(((x - nxwid // 2) / xb) ** 2) / 2.0)
         else:
-            fuzz = np.exp(-((y-nywid//2)/yb)**2/2.)
+            fuzz = np.exp(-(((y - nywid // 2) / yb) ** 2) / 2.0)
 
         # apply blurr
-        shist = scipy.signal.convolve2d(hist, fuzz, mode='same')
+        shist = scipy.signal.convolve2d(hist, fuzz, mode="same")
     else:
         nxwid = 1
         nywid = 1
@@ -1404,25 +1649,25 @@ def pts2cont(x, y, x1, x2, nx, y1, y2, ny, xb=0., yb=0., frac=None):
         Supply smoothed and raw versions of the histogram. The level
         returned applies to the smoothed version.
         """
-        lower = 0.
-        upper = 1.1*shist.max()
-        nlo   = 0
-        nhi   = hist.sum()
-        naim  = int(nhi*(1.-clev)+0.5)
+        lower = 0.0
+        upper = 1.1 * shist.max()
+        nlo = 0
+        nhi = hist.sum()
+        naim = int(nhi * (1.0 - clev) + 0.5)
 
         nlold = nlo + 1
         nhold = nhi + 1
         while nlo != nlold or nhi != nhold:
-            nlold  = nlo
-            nhold  = nhi
-            guess  = (lower+upper)/2.
-            mask   = shist < guess
+            nlold = nlo
+            nhold = nhi
+            guess = (lower + upper) / 2.0
+            mask = shist < guess
             nbelow = hist[mask].sum()
             if nbelow > naim:
-                nhi   = nbelow
+                nhi = nbelow
                 upper = guess
             else:
-                nlo   = nbelow
+                nlo = nbelow
                 lower = guess
         return guess
 
@@ -1434,7 +1679,8 @@ def pts2cont(x, y, x1, x2, nx, y1, y2, ny, xb=0., yb=0., frac=None):
         cont = None
     return (shist, cont)
 
-#def fastpure(x, y, e, nelem, fmax, nfreq, freq, pgram):
+
+# def fastpure(x, y, e, nelem, fmax, nfreq, freq, pgram):
 #    """
 #    Implementation of Press & Rybicki using scipy rather than
 #    home-cooked FFT routines.
@@ -1447,17 +1693,18 @@ def pts2cont(x, y, x1, x2, nx, y1, y2, ny, xb=0., yb=0., frac=None):
 #    xmax = x[e > 0].max()
 #    ofac = nfreq/(xdif*fmax)
 #
-#    MACC    = 4
-#    nfreqt  = 2*MACC*nfreq
+#    MACC = 4
+#    nfreqt = 2*MACC*nfreq
 #
 #    # First power of 2 > nfreqt
 #    ndim = 2**int(np.ceil(np.log(nfreqt)/np.log(2.)))
 #
-#    fac   = ndim*(fmax/nfreq)
+#    fac = ndim*(fmax/nfreq)
 #
 #    def spread(y, yy, n, x, m):
 #        """
-#        Spreads an array 
+#        Spreads an array
+
 
 def scargle(x, y, e, f1, f2, nf):
     """
@@ -1483,50 +1730,57 @@ def scargle(x, y, e, f1, f2, nf):
     # Use Clenshaw's recurrence to speed evaluation of sine and cosines
     # initialise them first
 
-    phi   = 2.*np.pi*x[e > 0]
-    theta = (f2-f1)/(nf-1)*phi
-    alpha = -2.*np.sin(0.5*theta)**2
-    beta  =  np.sin(theta)
-    theta = f1*phi
+    phi = 2.0 * np.pi * x[e > 0]
+    theta = (f2 - f1) / (nf - 1) * phi
+    alpha = -2.0 * np.sin(0.5 * theta) ** 2
+    beta = np.sin(theta)
+    theta = f1 * phi
     czero = np.cos(theta)
     szero = np.sin(theta)
-    
-    w  = 1./e[e>0]**2
 
-    f = np.linspace(f1,f2,nf)
+    w = 1.0 / e[e > 0] ** 2
+
+    f = np.linspace(f1, f2, nf)
     p = np.empty((nf,))
     for n in xrange(nf):
 
-        cc = (w*czero**2).sum()
-        cs = (w*czero*szero).sum()
-        ss = (w*szero**2).sum()
-        cy = (w*czero*y[e>0]).sum()        
-        sy = (w*szero*y[e>0]).sum()
-        
-        p[n] = (ss*cy*cy-2.*cs*sy*cy+cc*sy*sy)/(cc*ss-cs*cs)/2.
-        
+        cc = (w * czero**2).sum()
+        cs = (w * czero * szero).sum()
+        ss = (w * szero**2).sum()
+        cy = (w * czero * y[e > 0]).sum()
+        sy = (w * szero * y[e > 0]).sum()
+
+        p[n] = (
+            (ss * cy * cy - 2.0 * cs * sy * cy + cc * sy * sy)
+            / (cc * ss - cs * cs)
+            / 2.0
+        )
+
         # recurrence update
-        tmp    = np.copy(czero)
-        czero += alpha*czero-beta*szero
-        szero += alpha*szero+beta*tmp
-        
-    return (f,p)
+        tmp = np.copy(czero)
+        czero += alpha * czero - beta * szero
+        szero += alpha * szero + beta * tmp
+
+    return (f, p)
 
 
 def convex_hull(points):
     """
-    Returns the points on the convex hull of a 2D set of points in 
-    counter-clockwise order. "points" is an Nx2 list of 2D 
-    points, which can be obtained by zip-ing an x and y array 
-    together. An Mx2 list od 2D points will be returned by this 
+    Returns the points on the convex hull of a 2D set of points in
+    counter-clockwise order. "points" is an Nx2 list of 2D
+    points, which can be obtained by zip-ing an x and y array
+    together. An Mx2 list od 2D points will be returned by this
     routine
     """
 
-    TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
+    TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)  # ignore F841
 
+    # TODO: Find cmp and implement
     def _turn(p, q, r):
         """Returns -1, 0, 1 if p,q,r forms a right, straight, or left turn."""
-        return cmp((q[0] - p[0])*(r[1] - p[1]) - (r[0] - p[0])*(q[1] - p[1]), 0)
+        raise NotImplementedError('"cmp" function not implemented')
+        # return cmp((q[0] - p[0]) * 
+        #            (r[1] - p[1]) - (r[0] - p[0]) * (q[1] - p[1]), 0)
 
     def _dist(p, q):
         """Returns the squared Euclidean distance between p and q."""
@@ -1549,33 +1803,64 @@ def convex_hull(points):
             hull.append(q)
     return hull
 
+
 def expint2(x):
     """
     Compute E_2(x), exponential integral. x must be > 0
     """
-    A = np.array((-0.57721566, 0.99999193, -0.24991055, 0.05519968,\
-                       -0.00976004, 0.00107857, 8.5733287401, 18.0590169730, 8.6347608925,\
-                       0.2677737343, 9.5733223454, 25.6329561486, 21.0996530827, 3.9584969228))
+    A = np.array(
+        (
+            -0.57721566,
+            0.99999193,
+            -0.24991055,
+            0.05519968,
+            -0.00976004,
+            0.00107857,
+            8.5733287401,
+            18.0590169730,
+            8.6347608925,
+            0.2677737343,
+            9.5733223454,
+            25.6329561486,
+            21.0996530827,
+            3.9584969228,
+        )
+    )
 
-
-    ex  = np.exp(-x)
+    ex = np.exp(-x)
     if isinstance(x, float) or isinstance(x, int):
-        if x == 0.:
-            return 1.
-        if x <= 1.:
-            e1 = A[0]+x*(A[1]+x*(A[2]+x*(A[3]+x*(A[4]+x*A[5]))))-np.log(x)
+        if x == 0.0:
+            return 1.0
+        if x <= 1.0:
+            e1 = (
+                A[0]
+                + x * (A[1] + x * (A[2] + x * (A[3] + x * (A[4] + x * A[5]))))
+                - np.log(x)
+            )
         else:
-            e1 = ex*(A[9]+x*(A[8]+x*(A[7]+x*(A[6]+x))))/(x*(A[13]+x*(A[12]+x*(A[11]+x*(A[10]+x))))) 
+            e1 = (
+                ex
+                * (A[9] + x * (A[8] + x * (A[7] + x * (A[6] + x))))
+                / (x * (A[13] + x * (A[12] + x * (A[11] + x * (A[10] + x)))))
+            )
     else:
-        e1          = np.empty_like(x)
-        e1[x == 0.] = 0.
+        e1 = np.empty_like(x)
+        e1[x == 0.0] = 0.0
 
-        ok = (x > 0.) & (x <= 1.)
-        s  = x[ok]
-        e1[ok] = A[0]+s*(A[1]+s*(A[2]+s*(A[3]+s*(A[4]+s*A[5]))))-np.log(s)
+        ok = (x > 0.0) & (x <= 1.0)
+        s = x[ok]
+        e1[ok] = (
+            A[0]
+            + s * (A[1] + s * (A[2] + s * (A[3] + s * (A[4] + s * A[5]))))
+            - np.log(s)
+        )
 
-        ok = x > 1.
-        s  = x[ok]
-        e1[x > 1.] = ex[ok]*(A[9]+s*(A[8]+s*(A[7]+s*(A[6]+s))))/(s*(A[13]+s*(A[12]+s*(A[11]+s*(A[10]+s))))) 
+        ok = x > 1.0
+        s = x[ok]
+        e1[x > 1.0] = (
+            ex[ok]
+            * (A[9] + s * (A[8] + s * (A[7] + s * (A[6] + s))))
+            / (s * (A[13] + s * (A[12] + s * (A[11] + s * (A[10] + s)))))
+        )
 
-    return ex-x*e1
+    return ex - x * e1
