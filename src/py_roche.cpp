@@ -416,7 +416,11 @@ void init_roche(py::module_ &m) {
             float* y= new float[n];
             bool* s= new bool[n];
             Roche::roche_shadow(q, iangle, phi, dist, acc, x, y, s, n);
-            return std::make_tuple(x, y, s);
+            // Convert to py::array
+            py::array_t<float> x_arr(n, x);
+            py::array_t<float> y_arr(n, y);
+            py::array_t<bool> s_arr(n, s);
+            return std::make_tuple(x_arr, y_arr, s_arr);
         },
         "shadow(q, iangle, phi, n=200, dist=5., acc=1.e-4), Compute roche shadow region in equatorial plane, retuns tuple of x, y, bool arrays representing the Roche lobe shadow and if it is genuine shade",
         py::arg("q"), py::arg("iangle"), py::arg("phi"), py::arg("n") = 200, py::arg("dist") = 5., py::arg("acc") = 1.e-4

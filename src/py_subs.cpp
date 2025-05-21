@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 #include "py_subs.h"
 #include "trm/subs.h"
 
@@ -31,7 +32,8 @@ void init_subs(py::module_ &m) {
             [](double x, const std::vector<double>& sigma, double eps) { // Lambda for vectorized version
                 double* result; // To store results
                 Subs::voigt(x, sigma.data(), result, sigma.size(), eps); // Call the voigt function
-                return result; // Return the result
+                py::array_t<double> result_arr(sigma.size(), result); // Convert to py::array
+                return result_arr; // Return the result
             }, 
             "The Voigt function from cpp-subs"
     );  // Documentation for array input
@@ -48,7 +50,8 @@ void init_subs(py::module_ &m) {
         [](double a, std::vector<double>& x) { // Lambda for vectorized version
             double* result; // To store results
             Subs::gammq(a, x.data(), result, x.size()); // Call the vectorized gammaq
-            return result; // Return the result
+            py::array_t<double> result_arr(x.size(), result); // Convert to py::array
+            return result_arr; // Return the result
         }, 
         "The incomplete gamma function from cpp-subs");
 }
