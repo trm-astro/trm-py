@@ -54,16 +54,44 @@ jobs:
               name: cibw-sdist
               path: wheelhouse/*.tar.gz
     
-    upload_all:
-        needs: [build_wheels, make_sdist]
-        runs-on: ubuntu-latest
-        environment: pypi
-        permissions:
-          id-token: write
+    publish-to-pypi:
+        name: Publish to PyPI
         # main branch only
         if: github.ref == 'refs/heads/main'
+        needs: [build_wheels, make_sdist]
+        runs-on: ubuntu-latest
+        environment: 
+          name: pypi
+          url: https://pypi.org/p/trm-py
+        permissions:
+          id-token: write
         steps:
-        - uses: actions/download-artifact@v4
+        - name: Download the wheels
+          uses: actions/download-artifact@v4
           with:
             pattern: cibw-*
-            path: wheelhouse
+            path: wheelhouse/
+        - name: Publish
+          uses: pypa/gh-action-pypi-publish@release/v1
+        
+    publish-to-testpypi:
+      name: Publish to TestPyPI
+      # develop branch only
+      if: github.ref == 'refs/heads/develop'
+      needs: [build_wheels, make_sdist]
+      runs-on: ubuntu-latest
+      environment: 
+        name: testpypi
+        url: https://test.pypi.org/p/trm-py
+      permissions:
+        id-token: write
+      steps:
+      - name: Download the wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-*
+          path: wheelhouse/
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
