@@ -34,7 +34,7 @@ jobs:
         - uses: actions/upload-artifact@v4
           with:
             name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-            path: wheelhouse/*.whl
+            path: dist/*.whl
     
     make_sdist:
         name: Make SDist
@@ -50,9 +50,8 @@ jobs:
           - name: Upload SDist
             uses: actions/upload-artifact@v4
             with:
-              
               name: cibw-sdist
-              path: wheelhouse/*.tar.gz
+              path: dist/*.tar.gz
     
     publish-to-pypi:
         name: Publish to PyPI
@@ -70,7 +69,7 @@ jobs:
           uses: actions/download-artifact@v4
           with:
             pattern: cibw-*
-            path: wheelhouse/
+            path: dist/
         - name: Publish
           uses: pypa/gh-action-pypi-publish@release/v1
         
