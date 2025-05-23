@@ -16,19 +16,18 @@ function(install_lib PACKAGE_NAME)
     # Determine platform-specific loader path for shared libraries
     if(APPLE)
         set(LIB_PATH "lib")
+            # Apply correct local linking this block assume that all the libraries are in the same directory
+            set_target_properties(${PACKAGE_NAME} PROPERTIES
+            INSTALL_RPATH "@loader_path"
+            BUILD_WITH_INSTALL_RPATH TRUE
+            INSTALL_RPATH_USE_LINK_PATH TRUE
+        )
     elseif(UNIX)
         set(LIB_PATH "/usr/lib64")
     else()
         set(LIB_PATH "")  # Windows or unsupported platform
     endif()
     message("LIB_PATH set: ${LIB_PATH}\n")
-
-    # Apply correct local linking this block assume that all the libraries are in the same directory
-    set_target_properties(${PACKAGE_NAME} PROPERTIES
-        INSTALL_RPATH "@loader_path"
-        BUILD_WITH_INSTALL_RPATH TRUE
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-    )
 
     # Specify where the library binary will go
     install(TARGETS ${PACKAGE_NAME}
