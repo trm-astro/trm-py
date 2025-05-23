@@ -10,13 +10,6 @@ cmake_minimum_required(VERSION 3.27)
 # Function to install the library and its headers
 function(install_lib PACKAGE_NAME)
 
-    # Apply correct local linking this block assume that all the libraries are in the same directory
-    set_target_properties(${PACKAGE_NAME} PROPERTIES
-        INSTALL_RPATH "@loader_path"
-        BUILD_WITH_INSTALL_RPATH TRUE
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-    )
-
     # Specify the installation directory for the library
     # For macOS this has been fine to be in lib in the wheel
     # For Linux this needs to be in lib64 in the usual system locations
@@ -26,9 +19,17 @@ function(install_lib PACKAGE_NAME)
     elseif(UNIX)
         set(LIB_PATH "/usr/lib64")
     else()
-        set(LOADER_PATH "")  # Windows or unsupported platform
+        set(LIB_PATH "")  # Windows or unsupported platform
     endif()
     message("LIB_PATH set: ${LIB_PATH}\n")
+
+    # Apply correct local linking this block assume that all the libraries are in the same directory
+    # LOADER_PATH is set in top level CMakeLists.txt
+    set_target_properties(${PACKAGE_NAME} PROPERTIES
+        INSTALL_RPATH "${LOADER_PATH}"
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+    )
 
     # Specify where the library binary will go
     install(TARGETS ${PACKAGE_NAME}
