@@ -16,23 +16,26 @@ fi
 
 
 
-#getting into the weeds
-# find the wheel and extract the library
+# #getting into the weeds
+# # find the wheel and extract the library
 rm -rf uncomp || true
 unzip "$2" -d "uncomp"
-# inspect the three c++ extensions found in the wheel
-# check the shared object files
-echo "Checking trm_py/_cpp"
-ls -l uncomp/trm_py/_cpp/
+# # inspect the three c++ extensions found in the wheel
+# # check the shared object files
+# echo "Checking trm_py/_cpp"
+# ls -l uncomp/trm_py/_cpp/
 
-echo "Checking shared object file doppler"
-auditwheel lddtree uncomp/trm_py/_cpp/_cpp_doppler*.so
+# echo "Checking shared object file doppler"
+# auditwheel lddtree uncomp/trm_py/_cpp/_cpp_doppler*.so
 
-echo "Checking shared object file roche"
-auditwheel lddtree uncomp/trm_py/_cpp/_cpp_roche*.so
+# echo "Checking shared object file roche"
+# auditwheel lddtree uncomp/trm_py/_cpp/_cpp_roche*.so
 
-echo "Checking shared object file subs"
-auditwheel lddtree uncomp/trm_py/_cpp/_cpp_subs*.so
+# echo "Checking shared object file subs"
+# auditwheel lddtree uncomp/trm_py/_cpp/_cpp_subs*.so
+
+# echo "testing the executable"
+auditwheel lddtree uncomp/trm_py/_cpp/lroche
 
 # Repair the wheel using auditwheel
 echo "Auditwheel show"

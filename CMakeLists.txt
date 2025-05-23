@@ -31,39 +31,6 @@ else()
 endif()
 message("LOADER_PATH set: ${LOADER_PATH}\n")
 
-# The subdirectories are the libraries that are built
-# The .so [or .dylib if on mac] files are copied to the lib directory within the wheel
-# in trm_py the .so directory is populated with libraries from the wheel fix
-
-# e.g.
-# trm_py*.whl/
-# ├── include/
-# │   └── *.h
-# ├── lib/
-# │   ├── cmake/
-# │   ├── libbinary.so
-# │   ├── libroche.so
-# │   ├── libsubs.so
-# │   └── libtrm-mem.so
-# ├── trm_py/
-# │   ├── _cpp/
-# │   │   ├── _cpp_subs.so
-# │   │   ├── _cpp_roche.so
-# │   │   └── _cpp_doppler.so
-# │   ├── __init__.py
-# │   └── .so/
-# │       └── <systemlibs>.so (from the wheel fix)
-# ├── trm_py-*.dist-info/
-
-# These must be in order to build the subdirectories
-# roche -> binary -> subs
-# add_subdirectory(src/cpp-subs)
-# add_subdirectory(src/cpp-binary)
-# add_subdirectory(src/cpp-roche)
-# add_subdirectory(src/cpp-mem)
-# add_subdirectory(src/cpp-colly)
-# add_subdirectory(src/cpp-lcurve)
-
 # This includes the subdirectories as above and builds some lcurve executables
 message("Adding subdirectories")
 include(src/CMakeLists.txt)
