@@ -30,8 +30,8 @@ void init_subs(py::module_ &m) {
           py::arg("a"), py::arg("v"), py::arg("eps") = 1.e-8
     );
     m.def("voigt", 
-            [](double x, const std::vector<double>& sigma, double eps) { // Lambda for vectorized version
-                double* result; // To store results
+            [](double x, const std::vector<double>& sigma, double eps = 1.e-8) { // Lambda for vectorized version
+                double* result= new double[x.size()]; // Allocate memory for results
                 Subs::voigt(x, sigma.data(), result, sigma.size(), eps); // Call the voigt function
                 py::array_t<double> result_arr(sigma.size(), result); // Convert to py::array
                 return result_arr; // Return the result
@@ -49,7 +49,7 @@ void init_subs(py::module_ &m) {
     );
     m.def("gammq", 
         [](double a, std::vector<double>& x) { // Lambda for vectorized version
-            double* result; // To store results
+            double* result= new double[x.size()]; // Allocate memory for results
             Subs::gammq(a, x.data(), result, x.size()); // Call the vectorized gammaq
             py::array_t<double> result_arr(x.size(), result); // Convert to py::array
             return result_arr; // Return the result

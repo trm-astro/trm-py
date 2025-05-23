@@ -1,6 +1,6 @@
 [project]
 name = "trm-py"
-version = "0.1.1"
+version = "0.1.3"
 description = "Python package including bindings to the trm-cpp library for precision astronomy"
 authors = [
     { name = "Pip Grylls", email = "pipgryllsastro@gmail.com"}
@@ -8,7 +8,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "astropy>=6.0",
+    "astropy>=6.0.0",
     "numpy>=1.24.3",
     "scipy>=1.10.1",
     "matplotlib>=3.7.1",

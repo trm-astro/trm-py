@@ -40,7 +40,7 @@ def voigt(a, x, eps=1.0e-8):
     Outputs:
     returns the Voigt function (double or numpy array)
     """
-    return _cpp_subs.voigt(a, x)
+    return _cpp_subs.voigt(a, x, eps)
 
 
 def gammq(a, x):
