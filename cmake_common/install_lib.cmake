@@ -24,9 +24,8 @@ function(install_lib PACKAGE_NAME)
     message("LIB_PATH set: ${LIB_PATH}\n")
 
     # Apply correct local linking this block assume that all the libraries are in the same directory
-    # LOADER_PATH is set in top level CMakeLists.txt
     set_target_properties(${PACKAGE_NAME} PROPERTIES
-        INSTALL_RPATH "${LOADER_PATH}"
+        INSTALL_RPATH "@loader_path"
         BUILD_WITH_INSTALL_RPATH TRUE
         INSTALL_RPATH_USE_LINK_PATH TRUE
     )
