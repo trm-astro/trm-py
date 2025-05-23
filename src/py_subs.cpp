@@ -31,7 +31,7 @@ void init_subs(py::module_ &m) {
     );
     m.def("voigt", 
             [](double x, const std::vector<double>& sigma, double eps = 1.e-8) { // Lambda for vectorized version
-                double* result= new double[x.size()]; // Allocate memory for results
+                double* result= new double[sigma.size()]; // Allocate memory for results
                 Subs::voigt(x, sigma.data(), result, sigma.size(), eps); // Call the voigt function
                 py::array_t<double> result_arr(sigma.size(), result); // Convert to py::array
                 return result_arr; // Return the result
