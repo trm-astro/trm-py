@@ -53,6 +53,11 @@ foreach(EXEC lprofile levmarq lroche lroches picture rotprof simplex visualise)
             roche
             lcurve
     )
+    target_include_directories(${EXEC} 
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/include>
+            $<INSTALL_INTERFACE:include>
+    )
     set_target_properties(${EXEC} PROPERTIES
         INSTALL_RPATH "${LOADER_PATH}"
         BUILD_WITH_INSTALL_RPATH TRUE

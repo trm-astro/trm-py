@@ -77,6 +77,13 @@ OPTIONAL: Install to system, else programs are in `src/build/release`
 
 ## Troubleshooting/Probable FAQs
 
+PLPlot is complaining about fonts (mac):
+This is an issue with plplot not bringing its dependencies with it: current fix
+
+ > `brew install plplot`
+
+ This brings it to the system and then it can find them. Not ideal but a good patch.
+
 My cpp libs (conan) wont install correctly:
 
 > 1. `cd py_subs`
