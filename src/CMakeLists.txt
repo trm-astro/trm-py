@@ -37,13 +37,13 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve)
 add_executable(lprofile ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/lprofile.cc)
 add_executable(levmarq ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/levmarq.cc)
 add_executable(lroche ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/lroche.cc)
-add_executable(lroches ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/lroche.cc)  # Assuming lroches is similar to lroche
+#add_executable(lroches ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/lroche.cc)  # Assuming lroches is similar to lroche
 add_executable(picture ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/picture.cc ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/pos_disc.cc ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/disc_eclipse.cc)
 add_executable(rotprof ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/rotprof.cc)
 add_executable(simplex ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/simplex.cc)
 add_executable(visualise ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/visualise.cc)
 
-foreach(EXEC lprofile levmarq lroche lroches picture rotprof simplex visualise)
+foreach(EXEC lprofile levmarq lroche picture rotprof simplex visualise)
     #target_compile_options(${EXEC} PRIVATE ${OpenMP_CXX_FLAGS})
     target_link_libraries(
         ${EXEC}
@@ -53,11 +53,7 @@ foreach(EXEC lprofile levmarq lroche lroches picture rotprof simplex visualise)
             roche
             lcurve
     )
-    target_include_directories(${EXEC} 
-        PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/include>
-            $<INSTALL_INTERFACE:include>
-    )
+
     set_target_properties(${EXEC} PROPERTIES
         INSTALL_RPATH "${LOADER_PATH}"
         BUILD_WITH_INSTALL_RPATH TRUE
@@ -67,6 +63,9 @@ foreach(EXEC lprofile levmarq lroche lroches picture rotprof simplex visualise)
     install(TARGETS ${EXEC} 
         DESTINATION trm_py/_cpp/
     )
+    # Debugging: Print RPATH and linked libraries
+    get_target_property(RPATH ${EXEC} INSTALL_RPATH)
+    message("RPATH for ${EXEC}: ${RPATH}")
 endforeach()
 
 message("CMakeLists.txt for trm-cpp complete\n")

@@ -10,7 +10,7 @@ After using get the source code from the README:
 
 > `git checkout -b <my-branch-name>`
 
-or even better create an issue describing what you are looking to do create an issue branch and check this out!
+or even better create an issue describing what you are looking to do create an issue branch and checd ck this out!
 
 If you are modifying the codes `src/cpp-<name>` then also create a branch for them.
 
@@ -27,6 +27,8 @@ See the 'Get the source code' section of README to download these packages.
 if you want to edit a subpackage:
 
 > `cd src/subpackage`
+>
+> Note: by default you will be in a detached HEAD state, do git checkout main to get to main, then branch for your changes.
 >
 > `checkout (-b) <branchname>`
 >
