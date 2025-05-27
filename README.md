@@ -21,15 +21,50 @@ This code will be installable via `pip install trm-py` from PyPi (and potentiall
 
 Until further notice this is a WIP and should not be considered usable for scientific use.
 
-## Cibuildwheel 
+# Get the source code
 
 > Get the main repo
 > `git clone git@github.com:trm-astro/trm-py.git`
 >
-> Then get all the submodules
-> `git submodule update --init --recursive`
+> `cd trm-py`
 >
-> Install cibuildwheel 
+> Switch to your branch e.g.
+>
+> `git checkout <branch-name>`
+>
+> Then get all the submodules
+>
+> `git submodule update --init --recursive`
+
+## Local Wheel Build
+
+> Get the source as above
+>
+> Make a virtual environment
+>
+> `python3 -m venv .venv`
+>
+> `source .venv/bin/activate`
+>
+> Install scikit-build-core-conan and build
+>
+> `pip install scikit-build-core-conan build`
+>
+> `python -m build`
+>
+> Your wheel is now in `<trm-py>/dist/*.whl`, you will need to audit (linux) or delocate (mac) the wheel to make it portable to other systems.
+>
+> Note, on linux, the user running the build must have write access to `/usr/lib64` as this is the install location for the .so files it is possible to change this but requires modifying many of the CMake files looking for where LOADER_PATH is set. This will likely cause issues with the cibuildwheel so don't push this change.
+
+## Cibuildwheel
+
+> Get the source as above
+>
+> Make a virtual environment
+>
+> `python3 -m venv .venv`
+>
+> `source .venv/bin/activate` Install cibuildwheel 
 > `pip3 install cibuildwheel`
 >
 > >If you need to install/start docker
@@ -43,37 +78,13 @@ Until further notice this is a WIP and should not be considered usable for scien
 > >
 > > Make sure docker works (on my vm, vagrant, I did), ymmv
 > >
-> > sudo groupadd docker
-> > sudo usermod -aG docker $USER
-> > reboot
-> > 
+> > `sudo groupadd docker`
+> > `sudo usermod -aG docker $USER`
+> > `reboot`
 >
-> cibuildwheel
-
-
-## CPP-Only build
-
-By necessity the CPP subdirectorys are included to build the python wheel against.
-This makes this the a convenient place to do a full CPP build for those looking to access trm-subs and associated libs via cpp code.
-To build (and install) all the TRM cpp libs directly:
-
-TODO: Test this on multiplatform builds:
-
-0. Decide on your PLPLOT install method (see cmake_common/plplot_install.cmake)
-    1. If PLPLOT is installed then `0` and set path (recommended for linux)
-    2. Build from source during the install select `1`,`2`, or `3` depending on desired build location and set path if required
-    3. Use homebrew install `4` (recommended for mac) (`brew install plplot`)
-1. Install/activate the python envronment using poetry (required for conan)
-2. `cd src`, Move to the source directory
-3. `conan install . --build=missing`, Install PCRE2, llvm-openmp, and SOFA from conan
-4. `conan profile detect --force`, Set the conan build profile
-5. `cmake --preset conan-release -DPLPLOT_BUILD_TYPE='0,1,2,3,or 4' -DPLPLOT_USE_PATH='path/to/plplot/install'`, use the PLPLOT build choice and use the PLPLOT path if needed
-6. `cmake --build --preset conan-release`
-
-OPTIONAL: Install to system, else programs are in `src/build/release`
-
-7. `<sudo> cmake --install build/Release`
-8. (Optional): use `otool -l <exe or lib> | grep RPATH -A2` to ensure that the programs and libraries have linked correctly
+> `cibuildwheel`
+>
+> All your wheels are in `/wheelhouse` and in theory portable.
 
 ## Troubleshooting/Probable FAQs
 
@@ -111,3 +122,9 @@ CMake 3.5 issues
 
 > The latest CMake >4.00 deprecated anything with cmake_minimum_required(3.5)
 > Install CMake 3.31
+
+I just want the C++
+
+> Look in WHEEL_STRUCTURES.md you will see that all the cpp is bundled in the wheel it should be possible to link against it.
+> If you have issues make use of otool/ldd to check what the .dylib/.so are pointing at, all dependancies should be contained in the wheel.
+> If you need more than this it should be possible to make minor alterations to the CMakefiles to enable it to install all the .dylib/.so files to the normal system locations.
