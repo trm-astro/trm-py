@@ -45,6 +45,10 @@ add_executable(visualise ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/src/visualise.cc)
 
 foreach(EXEC lprofile levmarq lroche picture rotprof simplex visualise)
     #target_compile_options(${EXEC} PRIVATE ${OpenMP_CXX_FLAGS})
+    target_include_directories(
+        ${EXEC} PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/include
+    )
     target_link_libraries(
         ${EXEC}
             subs
