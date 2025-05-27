@@ -6,6 +6,18 @@ include(ExternalProject)
 
 message("CMakeLists.txt for trm-cpp")
 
+# Determine platform-specific loader path for shared libraries
+if(APPLE)
+    set(LOADER_PATH "@loader_path/../../lib")
+elseif(UNIX)
+    # For linux we need to set the loader path to /usr/lib64
+    set(LOADER_PATH "/usr/lib64")
+else()
+    set(LOADER_PATH "")  # Windows or unsupported platform
+endif()
+message("LOADER_PATH set: ${LOADER_PATH}\n")
+
+
 # Define CMAKE_COMMON if not already defined
 if(NOT DEFINED CMAKE_COMMON)
     set(CMAKE_COMMON ${PROJECT_SOURCE_DIR}/../cmake_common)
