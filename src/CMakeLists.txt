@@ -49,6 +49,7 @@ foreach(EXEC lprofile levmarq lroche picture rotprof simplex visualise)
         ${EXEC} PRIVATE
             ${CMAKE_CURRENT_LIST_DIR}/cpp-lcurve/include
     )
+
     target_link_libraries(
         ${EXEC}
             subs
@@ -59,6 +60,7 @@ foreach(EXEC lprofile levmarq lroche picture rotprof simplex visualise)
     )
 
     set_target_properties(${EXEC} PROPERTIES
+        LINK_FLAGS "-Wl,-rpath,${LOADER_PATH}"
         INSTALL_RPATH "${LOADER_PATH}"
         BUILD_WITH_INSTALL_RPATH TRUE
         INSTALL_RPATH_USE_LINK_PATH TRUE
