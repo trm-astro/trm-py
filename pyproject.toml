@@ -1,6 +1,6 @@
 [project]
 name = "trm-py"
-version = "0.1.7"
+version = "0.1.8"
 description = "Python package including bindings to the trm-cpp library for precision astronomy"
 authors = [
     { name = "Pip Grylls", email = "pipgryllsastro@gmail.com"}
