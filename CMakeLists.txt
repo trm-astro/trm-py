@@ -60,6 +60,10 @@ file(GLOB DOPPLER_SOURCES
     src/py_doppler.cpp
     src/py_doppler.h
 )
+file(GLOB LCURVE_SOURCES
+    src/py_lcurve.cpp
+    src/py_lcurve.h
+)
 
 # Target the CPP pybind code
 pybind11_add_module(_cpp_subs ${SUBS_SOURCES})
@@ -85,6 +89,13 @@ target_link_libraries(_cpp_doppler
         pybind11::headers
 )
 
+pybind11_add_module(_cpp_lcurve ${LCURVE_SOURCES})
+target_link_libraries(_cpp_lcurve 
+    PUBLIC
+        lcurve
+        pybind11::headers
+)
+
 target_include_directories(_cpp_subs
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -102,16 +113,21 @@ target_include_directories(_cpp_doppler
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
+target_include_directories(_cpp_lcurve
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
 
 # Apply properties to targets
-set_target_properties(_cpp_subs _cpp_roche _cpp_doppler PROPERTIES
+set_target_properties(_cpp_subs _cpp_roche _cpp_doppler _cpp_lcurve PROPERTIES
     INSTALL_RPATH "${LOADER_PATH}"
     BUILD_WITH_INSTALL_RPATH TRUE
     INSTALL_RPATH_USE_LINK_PATH TRUE
     BUILD_RPATH_USE_ORIGIN TRUE
 )
 
-install(TARGETS _cpp_subs _cpp_roche _cpp_doppler 
+install(TARGETS _cpp_subs _cpp_roche _cpp_doppler _cpp_lcurve
     LIBRARY DESTINATION trm_py/_cpp/
     RUNTIME DESTINATION trm_py/_cpp/
     )
