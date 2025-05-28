@@ -15,7 +15,7 @@ PYBIND11_MODULE(_cpp_lcurve, m) {
 
 void init_lcurve(py::module_ &m) {
     // Bind the Lcurve::run_lroche function
-    m.def("run_lroche",
+    m.def("lroche",
           &Lcurve::run_lroche,
           "Run the lroche function with model and data files",
           py::arg("model_file"), py::arg("data_file"));
