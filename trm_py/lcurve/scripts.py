@@ -14,7 +14,8 @@ from .._cpp import _cpp_lcurve
 
 
 def lroche():
-    _cpp_lcurve.lroche(sys.argv[1:])
+    assert len(sys.argv) == 3, "Usage: lroche <model_file> <data_file>"
+    _cpp_lcurve.lroche(sys.argv[1], sys.argv[2])
 
 
 # def picture():
