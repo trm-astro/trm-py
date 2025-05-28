@@ -14,31 +14,5 @@ if ! ldd "$LIB_FILE" | grep -q "$PCRE_LIB/lib"; then
     patchelf --set-rpath '$ORIGIN' "$LIB_FILE"
 fi
 
-
-
-# #getting into the weeds
-# # find the wheel and extract the library
-rm -rf uncomp || true
-unzip "$2" -d "uncomp"
-# # inspect the three c++ extensions found in the wheel
-# # check the shared object files
-# echo "Checking trm_py/_cpp"
-# ls -l uncomp/trm_py/_cpp/
-
-# echo "Checking shared object file doppler"
-# auditwheel lddtree uncomp/trm_py/_cpp/_cpp_doppler*.so
-
-# echo "Checking shared object file roche"
-# auditwheel lddtree uncomp/trm_py/_cpp/_cpp_roche*.so
-
-# echo "Checking shared object file subs"
-# auditwheel lddtree uncomp/trm_py/_cpp/_cpp_subs*.so
-
-# echo "testing the executable"
-auditwheel lddtree uncomp/trm_py/_cpp/lroche
-
-# Repair the wheel using auditwheel
-echo "Auditwheel show"
-auditwheel show "$2"
 echo "Auditwheel repair: auditwheel repair $2 -w $1"
 auditwheel repair "$2" -w "$1"

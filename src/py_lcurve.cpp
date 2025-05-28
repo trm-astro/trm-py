@@ -19,8 +19,10 @@ void init_lcurve(py::module_ &m) {
           &Lcurve::run_lroche,
           "Run the lroche function with model and data files",
           py::arg("model_file"), py::arg("data_file"));
+    
+    m.def("lprofile",
+          &Lcurve::run_lprofile,
+          "Run the lprofile function with a model file",
+          py::arg("model_file"));
 
-    // Add other bindings as needed
-    // For example, you can bind the Lcurve::Data class, Fobj class, etc.
-    // m.def("some_other_function", &Lcurve::some_other_function);
 }

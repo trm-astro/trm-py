@@ -5,8 +5,9 @@ import sys
 from .._cpp import _cpp_lcurve
 
 
-# def lprofile():
-#     call_tool("lprofile")
+def lprofile():
+    assert len(sys.argv) == 2, "Usage: lprofile <model_file>"
+    _cpp_lcurve.lprofile(sys.argv[1])
 
 
 # def levmarq():
