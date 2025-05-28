@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - remove-lcurve-executables
   pull_request:
     branches:
       - main
