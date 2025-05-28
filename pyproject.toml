@@ -23,7 +23,9 @@ test = [
 eplanner = "trm_py.observing.scripts.eplanner:eplanner"
 ltphaseii = "trm_py.observing.scripts.ltphaseii:ltphaseii"
 parallactic = "trm_py.observing.scripts.parallactic:parallactic"
+lprofile = "trm_py.lcurve.scripts:lprofile"
 lroche = "trm_py.lcurve.scripts:lroche"
+
 
 
 
