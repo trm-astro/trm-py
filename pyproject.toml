@@ -23,7 +23,7 @@ test = [
 eplanner = "trm_py.observing.scripts.eplanner:eplanner"
 ltphaseii = "trm_py.observing.scripts.ltphaseii:ltphaseii"
 parallactic = "trm_py.observing.scripts.parallactic:parallactic"
-lroche = "trm_py._cpp._cpp_lcurve:lroche"
+lroche = "trm_py.lcurve.scripts:lroche"
 
 
 
