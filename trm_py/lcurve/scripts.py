@@ -10,8 +10,9 @@ def lprofile():
     _cpp_lcurve.lprofile(sys.argv[1])
 
 
-# def levmarq():
-#     call_tool("levmarq")
+def levmarq():
+    assert len(sys.argv) == 3, "Usage: levmarq <model_file> <data_file>"
+    _cpp_lcurve.levmarq(sys.argv[1], sys.argv[2])
 
 
 def lroche():

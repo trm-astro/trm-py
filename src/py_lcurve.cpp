@@ -24,5 +24,10 @@ void init_lcurve(py::module_ &m) {
           &Lcurve::run_lprofile,
           "Run the lprofile function with a model file",
           py::arg("model_file"));
+    
+    m.def("levmarq",
+          &Lcurve::run_levmarq,
+          "Run the levmarq function with model and data files",
+          py::arg("model_file"), py::arg("data_file"));
 
 }
